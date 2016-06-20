@@ -26,6 +26,8 @@
 
     public SlackNotificationAgent(string token)
     {
+      SlackClient.RegisterConverter(new JsonRawConverter());
+
       this.token = token;
     }
 
@@ -209,7 +211,7 @@
             x =>
               {
                 this.channelsInfo[channel].UnreadMessage = x.messages.Count(this.IsRegularMessage);
-                this.channelsInfo[channel].UnreadMention = x.messages.Count(y => this.IsRegularMessage(y) && this.HasMention(y.raw));
+                this.channelsInfo[channel].UnreadMention = x.messages.Count(y => this.IsRegularMessage(y) && this.HasMention(this.GetRawMessage(y)));
                 waiter.Set();
               },
             channel, null, null, channel.unread_count);
@@ -229,14 +231,14 @@
     {
       if (message.type == "message")
       {
-        this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.GetReadableName(message.channel)} - Raw: {message.raw}");
+        this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.GetReadableName(message.channel)} - Raw: {this.GetRawMessage(message)}");
 
         if (this.IsRegularMessage(message) && this.ShouldMonitor(message.channel))
         {
           this.channelsInfo[message.channel].UnreadMessage++;
           if (this.Client.ChannelLookup.ContainsKey(message.channel) || this.Client.GroupLookup.ContainsKey(message.channel))
           {
-            this.channelsInfo[message.channel].UnreadMention += Convert.ToInt32(this.HasMention(message.raw));
+            this.channelsInfo[message.channel].UnreadMention += Convert.ToInt32(this.HasMention(this.GetRawMessage(message)));
           }
           else
           {
@@ -254,7 +256,7 @@
 
     private void OnImMarked(ImMarked message)
     {
-      this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.GetReadableName(message.channel)} - Raw: {message.raw}");
+      this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.GetReadableName(message.channel)} - Raw: {this.GetRawMessage(message)}");
 
       if (this.ShouldMonitor(message.channel))
       {
@@ -279,7 +281,7 @@
 
     private void OnChannelMarked(ChannelMarked message)
     {
-      this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.GetReadableName(message.channel)} - Raw: {message.raw}");
+      this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.GetReadableName(message.channel)} - Raw: {this.GetRawMessage(message)}");
 
       if (this.ShouldMonitor(message.channel))
       {
@@ -291,7 +293,7 @@
             {
               var messages = x.messages.Where(y => y.ts > message.ts).ToArray();
               channelNotification.UnreadMessage = messages.Count(this.IsRegularMessage);
-              channelNotification.UnreadMention = messages.Count(y => this.IsRegularMessage(y) && this.HasMention(y.raw));
+              channelNotification.UnreadMention = messages.Count(y => this.IsRegularMessage(y) && this.HasMention(this.GetRawMessage(y)));
               this.UpdateStatus();
             },
           channel, null, message.ts, HistoryItemsToFetch);
@@ -362,6 +364,19 @@
     private bool IsRegularMessage(string user, string subtype)
     {
       return user != this.Client.MySelf.id && (subtype == null || subtype == "file_share" || subtype == "bot_message");
+    }
+
+    private string GetRawMessage(SlackSocketMessage message)
+    {
+      IRawMessage rawMessage = message as IRawMessage;
+      if (rawMessage == null)
+      {
+        throw new InvalidCastException($"'{message.GetType().FullName}' is not a proxy class and cannot be casted to IRawMessage");
+      }
+      else
+      {
+        return rawMessage.Data;
+      }
     }
 
     #endregion

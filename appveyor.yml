@@ -1,0 +1,37 @@
+version: 1.0.3.{build}
+
+assembly_info:
+  patch: true
+  file: GlobalAssemblyInfo.cs
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
+
+install:
+- cmd: git submodule update --init --recursive
+
+build_script:
+- cmd: >-
+    nuget restore SlackAPI
+    msbuild SlackAPI\SlackAPI.sln /p:Configuration=Release /verbosity:minimal
+
+    nuget restore
+    msbuild Luxa4Slack.sln /p:Configuration=Release /verbosity:minimal
+
+    del /Q bin\Release\*.xml
+    del /Q bin\Release\*.pdb
+    7z a Luxa4Slack-%APPVEYOR_BUILD_VERSION%.zip bin\Release\*
+
+artifacts:
+- path: Luxa4Slack-*.zip
+  name: Luxa4Slack
+
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: fUfvn0AxoiLyyw4vz+0XESvl/FibBKHSfQwAYquPQqI9AwHhoPd4qNZonfjvLTuf
+  artifact: Luxa4Slack
+  draft: true
+  on:
+    branch: master
+    appveyor_repo_tag: true

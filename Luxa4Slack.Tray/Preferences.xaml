@@ -1,0 +1,48 @@
+﻿<Window x:Class="CG.Luxa4Slack.Tray.Preferences"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}"
+        Height="150" Width="420"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CG.Luxa4Slack.Tray"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance local:TrayViewModel}"
+        Icon="{Binding Icon}">
+  <Grid Margin="8">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition />
+      <RowDefinition />
+      <RowDefinition />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    
+    <Grid.Resources>
+      <Style TargetType="{x:Type CheckBox}">
+        <Style.Setters>
+          <Setter Property="Margin" Value="0,5" />
+        </Style.Setters>
+      </Style>
+      <Style TargetType="{x:Type TextBlock}">
+        <Style.Setters>
+          <Setter Property="Padding" Value="0,5" />
+        </Style.Setters>
+      </Style>
+    </Grid.Resources>
+
+    <TextBlock Grid.Row="0" Grid.Column="0" Text="Slack token: " />
+    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Token}" VerticalAlignment="Center" HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" />
+
+    <CheckBox Grid.Row="1" Grid.ColumnSpan="2" Content="Show unread messages" IsChecked="{Binding ShowUnreadMentions}" />
+    <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Content="Show unread mentions" IsChecked="{Binding ShowUnreadMessages}" />
+
+    <Button Grid.Row="3" Grid.ColumnSpan="2" Content="Save and restart" HorizontalAlignment="Center" Height="24" Width="120" Command="{Binding RestartApplicationCommand}" />
+
+  </Grid>
+</Window>

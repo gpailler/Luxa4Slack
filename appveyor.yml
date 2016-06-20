@@ -12,11 +12,6 @@ install:
 
 build_script:
 - cmd: >-
-    nuget restore SlackAPI
-
-    msbuild SlackAPI\SlackAPI.sln /p:Configuration=Release /verbosity:minimal
-
-
     nuget restore
 
     msbuild Luxa4Slack.sln /p:Configuration=Release /verbosity:minimal

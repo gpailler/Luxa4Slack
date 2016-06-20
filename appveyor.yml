@@ -26,7 +26,7 @@ build_script:
 
     del /Q bin\Release\*.pdb
 
-    7z a Luxa4Slack-%APPVEYOR_BUILD_VERSION%.zip bin\Release\*
+    7z a Luxa4Slack-%APPVEYOR_BUILD_VERSION%.zip %CD%\bin\Release\*
 
 artifacts:
 - path: Luxa4Slack-*.zip

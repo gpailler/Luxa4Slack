@@ -1,5 +1,5 @@
 # Luxa4Slack
-[![Build status](https://ci.appveyor.com/api/projects/status/gpoucsahnleb72hp?svg=true)](https://ci.appveyor.com/project/gpailler/luxa4slack)
+[![Build status](https://ci.appveyor.com/api/projects/status/jr2u84tj866eferw?svg=true)](https://ci.appveyor.com/project/gpailler/luxa4slack)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/gpailler/luxa4slack/blob/master/LICENSE)
 
 Luxa4Slack is a small Windows app showing your [Slack](https://slack.com/) unread messages/mentions on your [Luxafor](http://luxafor.com/) device.

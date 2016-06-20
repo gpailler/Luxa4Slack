@@ -14,7 +14,7 @@ Your Luxafor device switches to red color if you have unread mention(s) and blue
 
 ## Screenshots
 ##### Luxa4Slack.Console
-![Luxa4Slack.Console](https://cloud.githubusercontent.com/assets/3621529/16181666/f4d17b98-36cf-11e6-9a77-0558837927dc.png)
+![Luxa4Slack.Console](https://cloud.githubusercontent.com/assets/3621529/16187882/6b0c1b44-3705-11e6-92b3-a941c6eba834.png)
 ##### Luxa4Slack.Tray
 ![Luxa4Slack.Console](https://cloud.githubusercontent.com/assets/3621529/16181665/f4a4f5fa-36cf-11e6-9a47-b65f9146e5c4.png)
 

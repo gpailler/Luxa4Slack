@@ -1,6 +1,6 @@
 # Luxa4Slack
 [![Build status](https://ci.appveyor.com/api/projects/status/gpoucsahnleb72hp?svg=true)](https://ci.appveyor.com/project/gpailler/luxa4slack)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/gpailler/AtlassianBot/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/gpailler/luxa4slack/blob/master/LICENSE)
 
 Luxa4Slack is a small Windows app showing your [Slack](https://slack.com/) unread messages/mentions on your [Luxafor](http://luxafor.com/) device.
 Your Luxafor device switches to red color if you have unread mention(s) and blue color if you have unread message(s).

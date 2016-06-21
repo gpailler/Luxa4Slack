@@ -6,9 +6,8 @@
 
   public class Luxa4Slack
   {
-    private const int DelayBeforeUpdate = 1000;
-
-    private readonly object locker = new object();
+    private const int DelayBeforeUpdate = 2000;
+    
     private readonly string slackToken;
     private readonly bool showUnreadMentions;
     private readonly bool showUnreadMessages;
@@ -16,6 +15,8 @@
     private LuxaforClient luxaforClient;
     private SlackNotificationAgent slackAgent;
     private CancellationTokenSource cancellationTokenSource;
+    private Task updateTask;
+    private int previousWeight;
 
     public Luxa4Slack(string slackToken, bool showUnreadMentions, bool showUnreadMessages)
     {
@@ -79,20 +80,38 @@
 
     private void OnSlackChanged()
     {
-      lock (this.locker)
+      // Cancel previous task if any
+      this.cancellationTokenSource?.Cancel();
+      this.cancellationTokenSource?.Dispose();
+
+      // Wait previous task to complete
+      if (this.updateTask != null)
       {
-        this.cancellationTokenSource?.Cancel();
-        this.cancellationTokenSource?.Dispose();
-
-        this.cancellationTokenSource = new CancellationTokenSource();
-        CancellationToken token = this.cancellationTokenSource.Token;
-
-        // Don't execute luxafor update immediately.
-        // We wait in case we receive anothe change quickly to avoid blinks
-        Task
-          .Delay(DelayBeforeUpdate, token)
-          .ContinueWith(this.UpdateLuxaforAsync, token);
+        Task.WaitAny(this.updateTask);
       }
+
+      // Prepare new token
+      this.cancellationTokenSource = new CancellationTokenSource();
+      CancellationToken token = this.cancellationTokenSource.Token;
+
+      // Determine delay before task execution
+      // We want to shutdown light immediately but wait in other cases to avoid blinks
+      int currentWeight = this.GetWeight();
+      int delay = currentWeight > this.previousWeight ? DelayBeforeUpdate : 0;
+      this.previousWeight = currentWeight;
+
+      this.updateTask = Task
+          .Delay(delay, token)
+          .ContinueWith(this.UpdateLuxaforAsync, token);
+    }
+
+    private int GetWeight()
+    {
+      int weight = 0;
+      weight += this.showUnreadMentions && this.slackAgent.HasUnreadMentions ? 2 : 0;
+      weight += this.showUnreadMessages && this.slackAgent.HasUnreadMessages ? 1 : 0;
+
+      return weight;
     }
 
     private void UpdateLuxaforAsync(Task task)

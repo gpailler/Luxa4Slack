@@ -14,7 +14,10 @@ configuration: Release
 platform: Any CPU
 
 before_build:
- - dotnet restore -v Minimal
+- cmd: >-
+    dotnet restore -v Minimal
+
+    nuget restore Luxa4Slack.sln
 
 build:
   project: Luxa4Slack.sln

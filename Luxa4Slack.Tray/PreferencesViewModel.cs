@@ -1,5 +1,6 @@
 ﻿namespace CG.Luxa4Slack.Tray
 {
+  using System.Diagnostics;
   using System.Windows;
   using System.Windows.Input;
 
@@ -11,6 +12,7 @@
     public PreferencesViewModel()
     {
       this.RestartApplicationCommand = new RelayCommand(this.RestartApplication);
+      this.RequestTokenCommand = new RelayCommand(() => Process.Start(OAuthHelper.GetAuthorizationUri().ToString()));
       this.Title = $"{App.AppName} - Preferences";
       this.Token = Properties.Settings.Default.Token;
       this.ShowUnreadMentions = Properties.Settings.Default.ShowUnreadMentions;
@@ -18,6 +20,8 @@
     }
 
     public ICommand RestartApplicationCommand { get; private set; }
+
+    public ICommand RequestTokenCommand { get; private set; }
 
     public string Title { get; }
 
@@ -34,7 +38,7 @@
       Properties.Settings.Default.ShowUnreadMessages = this.ShowUnreadMessages;
       Properties.Settings.Default.Save();
 
-      System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
+      Process.Start(Application.ResourceAssembly.Location);
       Application.Current.Shutdown();
     }
   }

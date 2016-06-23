@@ -6,32 +6,46 @@
 
   using NLog;
 
-  class Program
+  public class Program
   {
     private static readonly ILogger logger = LogManager.GetLogger("Luxa4Slack.Console");
     private static Luxa4Slack luxa4Slack;
     private static CommandLineOptions commandLineOptions;
 
-    static void Main(string[] args)
+    public static void Main(string[] args)
     {
       commandLineOptions = ParseCommandLine(args);
       if (commandLineOptions != null)
       {
-        luxa4Slack = new Luxa4Slack(commandLineOptions.Token, commandLineOptions.ShowUnreadMentions, commandLineOptions.ShowUnreadMessages);
-        try
+        if (commandLineOptions.RequestToken)
         {
-          luxa4Slack.Initialize();
-          luxa4Slack.LuxaforFailure += OnLuxaforFailure;
+          logger.Warn("Please visit following uri to retrieve your Slack token");
+          logger.Warn(OAuthHelper.GetAuthorizationUri());
         }
-        catch (Exception ex)
+        else
         {
-          logger.Error(ex);
+          luxa4Slack = new Luxa4Slack(
+            commandLineOptions.Token,
+            commandLineOptions.ShowUnreadMentions,
+            commandLineOptions.ShowUnreadMessages);
+
+          try
+          {
+            luxa4Slack.Initialize();
+            luxa4Slack.LuxaforFailure += OnLuxaforFailure;
+
+            Console.ReadLine();
+          }
+          catch (Exception ex)
+          {
+            logger.Error(ex);
+          }
+          finally
+          {
+            luxa4Slack.Dispose();
+          }
         }
       }
-
-      Console.ReadLine();
-
-      luxa4Slack?.Dispose();
     }
 
     private static CommandLineOptions ParseCommandLine(string[] args)

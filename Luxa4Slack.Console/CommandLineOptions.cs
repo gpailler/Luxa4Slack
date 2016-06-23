@@ -4,16 +4,19 @@
 
   public class CommandLineOptions
   {
-    [Option('t', "token", Required = true, HelpText = "Slack token (https://api.slack.com/docs/oauth-test-tokens)")]
+    [Option('t', "token", Required = true, SetName = "run", HelpText = "Slack token (use --requesttoken option)")]
     public string Token { get; set; }
 
-    [Option('m', "showUnreadMessages", Default = true, HelpText = "Show unread messages")]
+    [Option('m', "showUnreadMessages", Default = true, SetName = "run", HelpText = "Show unread messages")]
     public bool ShowUnreadMessages { get; set; }
 
-    [Option('M', "showUnreadMentions", Default = true, HelpText = "Show unread mentions")]
+    [Option('M', "showUnreadMentions", Default = true, SetName = "run", HelpText = "Show unread mentions")]
     public bool ShowUnreadMentions { get; set; }
 
-    [Option('d', "debug", Default = false, HelpText = "Show debug informations")]
+    [Option('d', "debug", Default = false, SetName = "run", HelpText = "Show debug informations")]
     public bool Debug { get; set; }
+
+    [Option("requesttoken", Default = false, Required = true, SetName = "request", HelpText = "Request a Slack token")]
+    public bool RequestToken { get; set; }
   }
 }

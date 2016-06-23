@@ -17,7 +17,13 @@ before_build:
 - cmd: >-
     dotnet restore -v Minimal
 
-    nuget restore Luxa4Slack.sln
+    nuget restore Luxa4Slack\packages.config -PackagesDirectory packages
+
+    nuget restore Luxa4Slack.Console\packages.config -PackagesDirectory packages
+
+    nuget restore Luxa4Slack.Tray\packages.config -PackagesDirectory packages
+
+    nuget restore SlackAPI\packages.config -PackagesDirectory packages
 
 build:
   project: Luxa4Slack.sln

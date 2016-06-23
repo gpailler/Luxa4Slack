@@ -13,6 +13,9 @@ install:
 configuration: Release
 platform: Any CPU
 
+before_build:
+ - dotnet restore -v Minimal
+
 build:
   project: Luxa4Slack.sln
   verbosity: minimal

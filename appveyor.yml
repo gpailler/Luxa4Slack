@@ -10,13 +10,13 @@ assembly_info:
 install:
 - cmd: git submodule update --init --recursive
 
-build_script:
+configuration: Release
+platform: Any CPU
+
+build:
+  verbosity: minimal
+after_build:
 - cmd: >-
-    nuget restore
-
-    msbuild Luxa4Slack.sln /p:Configuration=Release /verbosity:minimal
-
-
     del /Q bin\Release\*.xml
 
     del /Q bin\Release\*.pdb

@@ -48,7 +48,7 @@
         // Add some keywords for mention detection
         this.highlightWords.Add(this.Client.MySelf.id);
         this.highlightWords.Add(this.Client.MySelf.name);
-        this.highlightWords.AddRange(this.Client.MySelf.prefs.highlight_words.Split(',').Select(x => x.Trim()));
+        this.highlightWords.AddRange(this.Client.MySelf.prefs.highlight_words.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()));
         this.Logger.Debug("Highlight words for mention detection: {0}", string.Join(", ", this.highlightWords));
 
         return true;

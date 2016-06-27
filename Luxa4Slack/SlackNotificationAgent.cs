@@ -348,7 +348,7 @@
 
     private bool HasMention(string text)
     {
-      return text != null && this.highlightWords.Any(text.Contains);
+      return text != null && this.highlightWords.Any(x => text.IndexOf(x, StringComparison.InvariantCultureIgnoreCase) != -1);
     }
 
     private bool IsRegularMessage(Message message)

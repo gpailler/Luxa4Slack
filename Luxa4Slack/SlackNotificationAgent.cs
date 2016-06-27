@@ -20,7 +20,7 @@
 
     private readonly string token;
     private readonly ChannelsInfo channelsInfo = new ChannelsInfo();
-    private readonly List<string> highlightWords = new List<string> { "<!channel>" };
+    private readonly List<string> highlightWords = new List<string>();
 
     private delegate void GetHistoryHandler(Action<MessageHistory> callback, Channel groupInfo, DateTime? latest, DateTime? oldest, int? count);
 
@@ -43,18 +43,7 @@
     {
       this.Logger.Debug($"Initialize connection using token : {this.token}");
 
-      if (this.InitializeConnection())
-      {
-        // Add some keywords for mention detection
-        this.highlightWords.Add(this.Client.MySelf.id);
-        this.highlightWords.Add(this.Client.MySelf.name);
-        this.highlightWords.AddRange(this.Client.MySelf.prefs.highlight_words.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()));
-        this.Logger.Debug("Highlight words for mention detection: {0}", string.Join(", ", this.highlightWords));
-
-        return true;
-      }
-
-      return false;
+      return this.InitializeConnection();
     }
 
     public virtual void Dispose()
@@ -77,7 +66,8 @@
       {
         this.Logger.Debug("Connection established");
 
-        this.FetchInitialData();
+        this.FetchHighlightWords();
+        this.FetchInitialMessages();
         this.UpdateStatus();
 
         // Listen specific messages
@@ -158,9 +148,9 @@
       }
     }
 
-    private void FetchInitialData()
+    private void FetchInitialMessages()
     {
-      this.Logger.Debug("Fetch initial data");
+      this.Logger.Debug("Fetch initial messages");
 
       // Retrieve only channels, groups and im visible in Slack client to mimic client behavior
       var selectedChannels = this.Client.Channels.Union(this.Client.Groups).Where(this.ShouldMonitor);
@@ -174,6 +164,17 @@
       {
         this.UpdateChannelInfo(im);
       }
+    }
+
+    private void FetchHighlightWords()
+    {
+      // Add some keywords for mention detection
+      this.highlightWords.Clear();
+      this.highlightWords.Add("<!channel>");
+      this.highlightWords.Add(this.Client.MySelf.id);
+      this.highlightWords.Add(this.Client.MySelf.name);
+      this.highlightWords.AddRange(this.Client.MySelf.prefs.highlight_words.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()));
+      this.Logger.Debug("Highlight words for mention detection: {0}", string.Join(", ", this.highlightWords));
     }
 
     private void UpdateChannelInfo(DirectMessageConversation im)

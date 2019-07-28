@@ -4,9 +4,9 @@
 
   public static class OAuthInfo
   {
-    public const string RedirectedUri = "https://luxa4slack.awan.tech/OAuth";
+    public const string RedirectedUri = "https://luxa4slack.azurewebsites.net/OAuth";
 
-    public const string ClientId = "3120088010.52664063651";
+    public const string ClientId = "707831884096.696442695363";
 
     public static readonly string SecretId = Environment.GetEnvironmentVariable("LUXA4SLACK_SECRETID");
 

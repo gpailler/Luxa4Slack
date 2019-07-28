@@ -26,8 +26,6 @@
 
     public SlackNotificationAgent(string token)
     {
-      SlackClient.RegisterConverter(new JsonRawConverter());
-
       this.token = token;
     }
 
@@ -127,6 +125,7 @@
       using (ManualResetEvent connectionSocketEvent = new ManualResetEvent(false))
       {
         this.Client = new SlackSocketClient(this.token);
+        this.Client.RegisterConverter(new JsonRawConverter());
 
         try
         {

@@ -8,7 +8,8 @@
   {
     public static Uri GetAuthorizationUri()
     {
-      return SlackClient.GetAuthorizeUri(OAuthInfo.ClientId, SlackScope.Client, OAuthInfo.RedirectedUri);
+      var slackClientHelper = new SlackClientHelpers();
+      return slackClientHelper.GetAuthorizeUri(OAuthInfo.ClientId, SlackScope.Client, OAuthInfo.RedirectedUri);
     }
   }
 }

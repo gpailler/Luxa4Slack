@@ -1,25 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack", "Luxa4Slack\Luxa4Slack.csproj", "{0E48DD4A-74D2-4C38-9B55-FCF0C17CAFD1}"
-	ProjectSection(ProjectDependencies) = postProject
-		{0C0A58A8-174E-4A4C-907B-C3569144D15D} = {0C0A58A8-174E-4A4C-907B-C3569144D15D}
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.Console", "Luxa4Slack.Console\Luxa4Slack.Console.csproj", "{AEB64042-7E5E-4D8A-82B4-C583569517DE}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C7A15E77-F1BC-45F4-9391-ECDC2AA7D892}"
 	ProjectSection(SolutionItems) = preProject
 		GlobalAssemblyInfo.cs = GlobalAssemblyInfo.cs
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack", "Luxa4Slack\Luxa4Slack.csproj", "{0E48DD4A-74D2-4C38-9B55-FCF0C17CAFD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.Console", "Luxa4Slack.Console\Luxa4Slack.Console.csproj", "{AEB64042-7E5E-4D8A-82B4-C583569517DE}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.Tray", "Luxa4Slack.Tray\Luxa4Slack.Tray.csproj", "{964EBFBE-A600-49B2-BDD8-422B46F1D544}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlackAPI", "SlackAPI\SlackAPI.csproj", "{0C0A58A8-174E-4A4C-907B-C3569144D15D}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Luxa4Slack.OAuthServer", "Luxa4Slack.OAuthServer\Luxa4Slack.OAuthServer.xproj", "{D775A585-E533-4B2B-A5F0-8662A822A135}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luxa4Slack.OAuthServer", "Luxa4Slack.OAuthServer\Luxa4Slack.OAuthServer.csproj", "{D775A585-E533-4B2B-A5F0-8662A822A135}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,10 +34,6 @@ Global
 		{964EBFBE-A600-49B2-BDD8-422B46F1D544}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{964EBFBE-A600-49B2-BDD8-422B46F1D544}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{964EBFBE-A600-49B2-BDD8-422B46F1D544}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0C0A58A8-174E-4A4C-907B-C3569144D15D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0C0A58A8-174E-4A4C-907B-C3569144D15D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0C0A58A8-174E-4A4C-907B-C3569144D15D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0C0A58A8-174E-4A4C-907B-C3569144D15D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D775A585-E533-4B2B-A5F0-8662A822A135}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D775A585-E533-4B2B-A5F0-8662A822A135}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D775A585-E533-4B2B-A5F0-8662A822A135}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -50,5 +41,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {23100DE3-56F0-4890-B250-5F10843010E7}
 	EndGlobalSection
 EndGlobal

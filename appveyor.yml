@@ -1,5 +1,7 @@
 version: 1.0.7.{build}
 
+image: Visual Studio 2017
+
 assembly_info:
   patch: true
   file: GlobalAssemblyInfo.cs
@@ -11,8 +13,7 @@ configuration: Release
 platform: Any CPU
 
 before_build:
-- cmd: >-
-    dotnet restore
+- appveyor-retry nuget restore
 
 build:
   project: Luxa4Slack.sln

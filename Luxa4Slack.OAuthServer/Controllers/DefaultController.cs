@@ -3,7 +3,7 @@
   using System;
   using System.Collections.Generic;
   using System.Net.Http;
-
+  using System.Reflection;
   using Microsoft.AspNetCore.Mvc;
 
   using Newtonsoft.Json;
@@ -12,6 +12,7 @@
   {
     public IActionResult Index()
     {
+      this.ViewData["Version"] = this.GetType().GetTypeInfo().Assembly.GetName().Version.ToString();
       return this.View();
     }
 

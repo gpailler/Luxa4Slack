@@ -1,4 +1,6 @@
-version: 1.0.6.{build}
+version: 1.0.7.{build}
+
+image: Visual Studio 2017
 
 assembly_info:
   patch: true
@@ -7,23 +9,11 @@ assembly_info:
   assembly_file_version: '{version}'
   assembly_informational_version: '{version}'
 
-install:
-- cmd: git submodule update --init --recursive
-
 configuration: Release
 platform: Any CPU
 
 before_build:
-- cmd: >-
-    dotnet restore -v Minimal
-
-    nuget restore Luxa4Slack\packages.config -PackagesDirectory packages
-
-    nuget restore Luxa4Slack.Console\packages.config -PackagesDirectory packages
-
-    nuget restore Luxa4Slack.Tray\packages.config -PackagesDirectory packages
-
-    nuget restore SlackAPI\packages.config -PackagesDirectory packages
+- appveyor-retry nuget restore
 
 build:
   project: Luxa4Slack.sln

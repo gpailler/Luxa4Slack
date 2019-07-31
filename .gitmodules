@@ -1,3 +1,0 @@
-[submodule "SlackAPI"]
-	path = SlackAPI
-	url = https://github.com/gpailler/SlackAPI.git

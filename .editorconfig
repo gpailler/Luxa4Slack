@@ -1,0 +1,18 @@
+﻿root = true
+
+[*]
+indent_style = space
+end_of_line = crlf
+trim_trailing_whitespace = true
+insert_final_newline = true
+charset = utf-8-bom
+
+[*.cs]
+indent_size = 2
+dotnet_sort_system_directives_first = true
+dotnet_style_require_accessibility_modifiers = always
+csharp_qualified_using_at_nested_scope = true
+csharp_add_imports_to_deepest_scope = true
+
+[*.{csproj,cake}]
+indent_size = 2

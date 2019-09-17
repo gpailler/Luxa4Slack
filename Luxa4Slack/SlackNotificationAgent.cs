@@ -4,11 +4,15 @@
   using System.Collections.Generic;
   using System.Linq;
   using System.Threading;
+  using System.Threading.Tasks;
 
   using NLog;
 
   using SlackAPI;
   using SlackAPI.WebSocketMessages;
+  using SlackAPI.RPCMessages;
+
+  //using SlackCli
 
   internal class SlackNotificationAgent : IDisposable
   {
@@ -21,6 +25,9 @@
     private readonly string token;
     private readonly ChannelsInfo channelsInfo = new ChannelsInfo();
     private readonly List<string> highlightWords = new List<string>();
+    private UserGetPresenceResponse UserPresence = new UserGetPresenceResponse();
+
+    // private readonly Enum PresenceResponse = new PresenceResponse();
 
     private delegate void GetHistoryHandler(Action<MessageHistory> callback, Channel groupInfo, DateTime? latest, DateTime? oldest, int? count);
 
@@ -37,6 +44,8 @@
 
     public bool HasUnreadMentions { get; private set; }
 
+    public bool isAway { get; private set; }
+    
     public virtual bool Initialize()
     {
       this.Logger.Debug($"Initialize connection using token : {this.token}");
@@ -68,11 +77,27 @@
         this.FetchInitialMessages();
         this.UpdateStatus();
 
+        // Bind the Presence change
+        this.Client.BindCallback<PresenceChange>(x =>
+        {
+          this.Logger.Debug("Change event!");
+          this.UpdateStatus();
+        });
+
+        this.Client.BindCallback<ManualPresenceChange>(x =>
+        {
+          this.Logger.Debug("Manual change event!");
+          this.UpdateStatus();
+        });
+
         // Listen specific messages
         this.Client.BindCallback<ImMarked>(this.OnImMarked);
         this.Client.BindCallback<ChannelMarked>(this.OnChannelMarked);
         this.Client.BindCallback<GroupMarked>(this.OnChannelMarked);
         this.Client.BindCallback<NewMessage>(this.OnMessageReceived);
+
+        // Subscribe to Presence events
+        this.PresenceSubscribe(token);
 
         return true;
       }
@@ -90,6 +115,10 @@
       this.Client.UnbindCallback<ChannelMarked>(this.OnChannelMarked);
       this.Client.UnbindCallback<GroupMarked>(this.OnChannelMarked);
       this.Client.UnbindCallback<NewMessage>(this.OnMessageReceived);
+      this.Client.UnbindCallback<PresenceChange>(x =>
+      {
+        this.UpdatePresenceStatus();
+      });
 
       this.Client.CloseSocket();
     }
@@ -104,11 +133,67 @@
       this.HasUnreadMessages = this.channelsInfo.Any(x => x.Value.UnreadMessage > 0);
       this.HasUnreadMentions = this.channelsInfo.Any(x => x.Value.UnreadMention > 0);
 
+      this.Client.GetPresence(
+        x =>
+        {
+          this.UserPresence = x;
+          this.UpdatePresenceStatus();
+        }
+        , this.Client.MySelf.id);
+
+      
+
+      //this.Client.HandlePresence()
+
       this.Logger.Debug($"HasUnreadMention: {this.HasUnreadMentions}");
       this.Logger.Debug($"HasUnreadMessage: {this.HasUnreadMessages}");
 
       this.Changed?.Invoke();
     }
+
+    protected void UpdatePresenceStatus()
+    {
+      this.Logger.Debug($"User is currently {UserPresence.presence.ToString()}");
+
+      if (UserPresence.presence.ToString() == "away")
+      {
+        this.isAway = true;
+      }
+      else
+      {
+        // Going to assume default of being there.
+        this.isAway = false;
+      }
+
+      
+      this.Changed?.Invoke();
+      
+    }
+
+    protected void OnPresenceChange()
+    {
+      this.Client.GetPresence(
+        x =>
+        {
+          this.UserPresence = x;
+          this.UpdatePresenceStatus();
+        }
+        , this.Client.MySelf.id);
+    }
+
+
+    protected async Task PresenceSubscribe(string token)
+    {
+      var webhookUrl = new Uri("https://slack.com/api/rtm.connect");
+      var slackClient = new SlackClient(webhookUrl);
+      this.Logger.Debug("Calling URL");
+      
+      var response = await slackClient.Presence_Sub(token) ;
+      var isValid = response.IsSuccessStatusCode ? "valid" : "invalid";
+      this.Logger.Debug($"Subscribe response {isValid}");
+      
+    }
+
 
     protected void ClearChannelsInfo()
     {
@@ -253,6 +338,13 @@
         }
       }
     }
+
+    private void PresenceSub()
+    {
+
+
+    }
+
 
     private void OnImMarked(ImMarked message)
     {

@@ -8,9 +8,10 @@
   {
     private const int DelayBeforeUpdate = 2000;
     
-    private readonly string slackToken;
+    public readonly string slackToken;
     private readonly bool showUnreadMentions;
     private readonly bool showUnreadMessages;
+    private readonly bool showStatus;
 
     private LuxaforClient luxaforClient;
     private SlackNotificationAgent slackAgent;
@@ -18,7 +19,7 @@
     private Task updateTask;
     private int previousWeight;
 
-    public Luxa4Slack(string slackToken, bool showUnreadMentions, bool showUnreadMessages)
+    public Luxa4Slack(string slackToken, bool showUnreadMentions, bool showUnreadMessages, bool showStatus)
     {
       if (slackToken == null)
       {
@@ -28,6 +29,7 @@
       this.slackToken = slackToken;
       this.showUnreadMentions = showUnreadMentions;
       this.showUnreadMessages = showUnreadMessages;
+      this.showStatus = showStatus;
     }
 
     public event Action LuxaforFailure;
@@ -110,7 +112,7 @@
       int weight = 0;
       weight += this.showUnreadMentions && this.slackAgent.HasUnreadMentions ? 2 : 0;
       weight += this.showUnreadMessages && this.slackAgent.HasUnreadMessages ? 1 : 0;
-
+      
       return weight;
     }
 
@@ -119,11 +121,19 @@
       bool result;
       if (this.showUnreadMentions && this.slackAgent.HasUnreadMentions)
       {
-        result = this.luxaforClient.Set(LuxaforClient.Colors.Red);
+        result = this.luxaforClient.Set(LuxaforClient.Colors.Cyan);
       }
       else if (this.showUnreadMessages && this.slackAgent.HasUnreadMessages)
       {
         result = this.luxaforClient.Set(LuxaforClient.Colors.Blue);
+      }
+      else if (this.showStatus && this.slackAgent.isAway)
+      {
+        result = this.luxaforClient.Set(LuxaforClient.Colors.Red);
+      }
+      else if (this.showStatus && this.slackAgent.isAway == false)
+      {
+        result = this.luxaforClient.Set(LuxaforClient.Colors.Green);
       }
       else
       {

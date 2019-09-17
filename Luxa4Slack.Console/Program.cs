@@ -27,7 +27,8 @@
           luxa4Slack = new Luxa4Slack(
             commandLineOptions.Token,
             commandLineOptions.ShowUnreadMentions,
-            commandLineOptions.ShowUnreadMessages);
+            commandLineOptions.ShowUnreadMessages,
+            commandLineOptions.ShowStatus);
 
           try
           {

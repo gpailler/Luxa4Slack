@@ -71,7 +71,6 @@
     </Compile>
     <Compile Include="ChannelInfo.cs" />
     <Compile Include="ChannelsInfo.cs" />
-    <Compile Include="SlackClient.cs" />
     <Compile Include="IRawMessage.cs" />
     <Compile Include="JsonRawConverter.cs" />
     <Compile Include="Luxa4Slack.cs" />

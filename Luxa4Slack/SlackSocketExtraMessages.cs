@@ -17,26 +17,9 @@
   {
   }
 
-  /*
-  [SlackSocketRouting("manual_presence_change", null)]
-  public class ManualPresenceChange : SlackSocketMessage
+  [SlackSocketRouting("manual_presence_change")]
+  public class ManualPresenceChange : PresenceChange
   {
-    public string user;
-    public Presence presence;
-
-  }
-  */
-
-}
-
-namespace SlackAPI.WebSocketMessages
-{
-  [SlackSocketRouting("manual_presence_change", null)]
-  public class ManualPresenceChange : SlackSocketMessage
-  {
-    public string user;
-    public Presence presence;
-
   }
 }
 

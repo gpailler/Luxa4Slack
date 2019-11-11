@@ -21,7 +21,9 @@
       White,
       Red,
       Green,
-      Blue
+      Yellow,
+      Blue,
+      Cyan
     }
 
     private readonly Dictionary<Colors, Color> colorsMapping = new Dictionary<Colors, Color>
@@ -30,7 +32,9 @@
                                                           { Colors.White, new Color(255, 255, 255) },
                                                           { Colors.Red, new Color(255, 0, 0) },
                                                           { Colors.Green, new Color(0, 255, 0) },
+                                                          { Colors.Yellow, new Color(255, 255, 0) },
                                                           { Colors.Blue, new Color(0, 0, 255) },
+                                                          { Colors.Cyan, new Color(0, 255, 255) },
                                                         };
 
     private IDevice device;
@@ -75,7 +79,7 @@
     {
       this.logger.Debug("Test device");
 
-      bool result = this.Set(Colors.Green);
+      bool result = this.Set(Colors.White);
       Thread.Sleep(200);
 
       return result && this.Set(Colors.None);

@@ -17,6 +17,7 @@
       this.Token = Properties.Settings.Default.Token;
       this.ShowUnreadMentions = Properties.Settings.Default.ShowUnreadMentions;
       this.ShowUnreadMessages = Properties.Settings.Default.ShowUnreadMessages;
+      this.ShowStatus = Properties.Settings.Default.ShowStatus;
     }
 
     public ICommand RestartApplicationCommand { get; private set; }
@@ -31,11 +32,14 @@
 
     public bool ShowUnreadMessages { get; set; }
 
+    public bool ShowStatus { get; set; }
+
     private void RestartApplication()
     {
       Properties.Settings.Default.Token = this.Token;
       Properties.Settings.Default.ShowUnreadMentions = this.ShowUnreadMentions;
       Properties.Settings.Default.ShowUnreadMessages = this.ShowUnreadMessages;
+      Properties.Settings.Default.ShowStatus = this.ShowStatus;
       Properties.Settings.Default.Save();
 
       Process.Start(Application.ResourceAssembly.Location);

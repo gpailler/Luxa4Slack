@@ -22,6 +22,8 @@
 
     private bool showUnreadMessages;
 
+    private bool showStatus;
+
     private Luxa4Slack luxa4Slack;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -44,6 +46,7 @@
       this.token = Settings.Default.Token;
       this.showUnreadMentions = Settings.Default.ShowUnreadMentions;
       this.showUnreadMessages = Settings.Default.ShowUnreadMessages;
+      this.showStatus = Settings.Default.ShowStatus;
 
       // Init Luxa4Slack
       Task.Factory.StartNew(this.Initialize);
@@ -66,7 +69,7 @@
       }
       else
       {
-        this.luxa4Slack = new Luxa4Slack(this.token, this.showUnreadMentions, this.showUnreadMessages);
+        this.luxa4Slack = new Luxa4Slack(this.token, this.showUnreadMentions, this.showUnreadMessages, this.showStatus);
         try
         {
           this.luxa4Slack.Initialize();

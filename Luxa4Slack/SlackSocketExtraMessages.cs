@@ -16,4 +16,27 @@
   public class GroupMarked : ChannelMarked
   {
   }
+
+  /*
+  [SlackSocketRouting("manual_presence_change", null)]
+  public class ManualPresenceChange : SlackSocketMessage
+  {
+    public string user;
+    public Presence presence;
+
+  }
+  */
+
 }
+
+namespace SlackAPI.WebSocketMessages
+{
+  [SlackSocketRouting("manual_presence_change", null)]
+  public class ManualPresenceChange : SlackSocketMessage
+  {
+    public string user;
+    public Presence presence;
+
+  }
+}
+

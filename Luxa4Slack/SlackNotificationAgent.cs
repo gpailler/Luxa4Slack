@@ -3,6 +3,7 @@
   using System;
   using System.Collections.Generic;
   using System.Linq;
+  using System.Reflection;
   using System.Threading;
 
   using NLog;
@@ -70,7 +71,7 @@
         this.FetchHighlightWords();
         this.FetchInitialMessages();
         this.UpdateStatus();
-        this.UpdatePresenceStatus();
+        this.SubscribePresenceChange();
 
         // Bind the Presence change
         this.Client.BindCallback<PresenceChange>(this.OnPresenceChanged);
@@ -339,6 +340,14 @@
     private void OnPresenceChanged(PresenceChange message)
     {
       this.UpdatePresenceStatus();
+    }
+
+    private void SubscribePresenceChange()
+    {
+      // OnPresenceChanged is raised when the subscription message is sent
+      var underlyingSocketField = typeof(SlackSocketClient).GetField("underlyingSocket", BindingFlags.Instance | BindingFlags.NonPublic);
+      var socket = (SlackSocket)underlyingSocketField.GetValue(this.Client);
+      socket.Send(new PresenceSub(this.Client.MySelf.id));
     }
 
     private string GetReadableName(string channelId)

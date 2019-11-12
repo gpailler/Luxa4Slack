@@ -21,5 +21,16 @@
   public class ManualPresenceChange : PresenceChange
   {
   }
+
+  [SlackSocketRouting("presence_sub")]
+  public class PresenceSub : SlackSocketMessage
+  {
+    public PresenceSub(params string[] ids)
+    {
+      this.ids = ids;
+    }
+
+    public string[] ids { get; }
+  }
 }
 

@@ -316,30 +316,20 @@
       }
     }
 
-    private void UpdatePresenceStatus()
-    {
-      this.Client.GetPresence(userPresence =>
-        {
-          this.Logger.Debug($"User is currently {userPresence.presence.ToString()}");
-
-          if (userPresence.presence.ToString() == "away")
-          {
-            this.IsAway = true;
-          }
-          else
-          {
-            // Going to assume default of being there.
-            this.IsAway = false;
-          }
-
-          this.Changed?.Invoke();
-        },
-        this.Client.MySelf.id);
-    }
-
     private void OnPresenceChanged(PresenceChange message)
     {
-      this.UpdatePresenceStatus();
+      this.Logger.Debug($"User is currently {message.presence.ToString()}");
+      if (message.presence == Presence.away)
+      {
+        this.IsAway = true;
+      }
+      else
+      {
+        // Going to assume default of being there.
+        this.IsAway = false;
+      }
+
+      this.Changed?.Invoke();
     }
 
     private void SubscribePresenceChange()

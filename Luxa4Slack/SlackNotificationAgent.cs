@@ -3,13 +3,11 @@
   using System;
   using System.Collections.Generic;
   using System.Linq;
-  using System.Reflection;
   using System.Threading;
 
   using NLog;
 
   using SlackAPI;
-  using SlackAPI.RPCMessages;
   using SlackAPI.WebSocketMessages;
 
   internal class SlackNotificationAgent : IDisposable
@@ -40,7 +38,7 @@
     public bool HasUnreadMentions { get; private set; }
 
     public bool IsAway { get; private set; }
-    
+
     public virtual bool Initialize()
     {
       this.Logger.Debug($"Initialize connection using token : {this.token}");
@@ -71,11 +69,10 @@
         this.FetchHighlightWords();
         this.FetchInitialMessages();
         this.UpdateStatus();
-        this.SubscribePresenceChange();
 
         // Bind the Presence change
-        this.Client.BindCallback<PresenceChange>(this.OnPresenceChanged);
-        this.Client.BindCallback<ManualPresenceChange>(this.OnPresenceChanged);
+        this.Client.OnPresenceChanged += this.OnPresenceChanged;
+        this.Client.SubscribePresenceChange(this.Client.MySelf.id);
 
         // Listen specific messages
         this.Client.BindCallback<ImMarked>(this.OnImMarked);
@@ -100,8 +97,7 @@
       this.Client.UnbindCallback<GroupMarked>(this.OnChannelMarked);
       this.Client.UnbindCallback<NewMessage>(this.OnMessageReceived);
 
-      this.Client.UnbindCallback<PresenceChange>(this.OnPresenceChanged);
-      this.Client.UnbindCallback<ManualPresenceChange>(this.OnPresenceChanged);
+      this.Client.OnPresenceChanged -= this.OnPresenceChanged;
 
       this.Client.CloseSocket();
     }
@@ -330,14 +326,6 @@
       }
 
       this.Changed?.Invoke();
-    }
-
-    private void SubscribePresenceChange()
-    {
-      // OnPresenceChanged is raised when the subscription message is sent
-      var underlyingSocketField = typeof(SlackSocketClient).GetField("underlyingSocket", BindingFlags.Instance | BindingFlags.NonPublic);
-      var socket = (SlackSocket)underlyingSocketField.GetValue(this.Client);
-      socket.Send(new PresenceSub(this.Client.MySelf.id));
     }
 
     private string GetReadableName(string channelId)

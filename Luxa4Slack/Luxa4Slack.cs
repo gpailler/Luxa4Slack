@@ -112,7 +112,7 @@
       int weight = 0;
       weight += this.showUnreadMentions && this.slackAgent.HasUnreadMentions ? 2 : 0;
       weight += this.showUnreadMessages && this.slackAgent.HasUnreadMessages ? 1 : 0;
-      
+
       return weight;
     }
 

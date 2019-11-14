@@ -13,7 +13,7 @@
     [Option('M', "showUnreadMentions", Default = true, SetName = "run", HelpText = "Show unread mentions")]
     public bool ShowUnreadMentions { get; set; }
 
-    [Option('s', "showStatus", Default = true, SetName = "run", HelpText = "Show status changes")]
+    [Option('s', "showStatus", Default = false, SetName = "run", HelpText = "Show status changes")]
     public bool ShowStatus { get; set; }
 
     [Option('d', "debug", Default = false, SetName = "run", HelpText = "Show debug informations")]

@@ -82,5 +82,17 @@ namespace CG.Luxa4Slack.Tray.Properties {
                 this["ShowUnreadMentions"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public double Brighness {
+            get {
+                return ((double)(this["Brighness"]));
+            }
+            set {
+                this["Brighness"] = value;
+            }
+        }
     }
 }

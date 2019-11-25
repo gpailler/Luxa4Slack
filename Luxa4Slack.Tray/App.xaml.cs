@@ -24,6 +24,8 @@
 
     private bool showStatus;
 
+    private double brightness;
+
     private Luxa4Slack luxa4Slack;
 
     protected override async void OnStartup(StartupEventArgs e)
@@ -47,6 +49,7 @@
       this.showUnreadMentions = Settings.Default.ShowUnreadMentions;
       this.showUnreadMessages = Settings.Default.ShowUnreadMessages;
       this.showStatus = Settings.Default.ShowStatus;
+      this.brightness = Settings.Default.Brighness;
 
       // Init Luxa4Slack
       await this.InitializeAsync();
@@ -68,7 +71,7 @@
       }
       else
       {
-        this.luxa4Slack = new Luxa4Slack(this.token, this.showUnreadMentions, this.showUnreadMessages, this.showStatus);
+        this.luxa4Slack = new Luxa4Slack(this.token, this.showUnreadMentions, this.showUnreadMessages, this.showStatus, this.brightness);
         try
         {
           await this.luxa4Slack.Initialize();

@@ -8,12 +8,20 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CG.Luxa4Slack.Tray"
+        xmlns:command="http://www.galasoft.ch/mvvmlight"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance local:TrayViewModel}"
-        Icon="{Binding Icon}">
+        d:DataContext="{d:DesignInstance local:PreferencesViewModel}">
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closed">
+            <command:EventToCommand Command="{Binding RestartApplicationCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="65" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -22,6 +30,8 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition />
+            <RowDefinition Height="35"/>
         </Grid.RowDefinitions>
 
         <Grid.Resources>
@@ -37,18 +47,22 @@
             </Style>
         </Grid.Resources>
 
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="Slack token: " />
+        <TextBlock Grid.Row="0" Grid.Column="0" Text="Slack token" />
         <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Token}" VerticalAlignment="Center" HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch" />
 
-        <TextBlock  Margin="0,-5,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="1">
-        <Hyperlink Command="{Binding RequestTokenCommand}">Request a Slack token</Hyperlink>
+        <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,-5,0,0" VerticalAlignment="Top" HorizontalAlignment="Right">
+            <Hyperlink Command="{Binding RequestTokenCommand}">Request a Slack token</Hyperlink>
         </TextBlock>
 
-        <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Content="Show unread messages" IsChecked="{Binding ShowUnreadMentions}" />
-        <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Content="Show unread mentions" IsChecked="{Binding ShowUnreadMessages}" Margin="0,25,0,22" Grid.RowSpan="2" />
-        <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Content="Show status" IsChecked="{Binding ShowStatus}" Margin="0,45,0,0" Grid.RowSpan="2"/>
+        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Show unread messages" IsChecked="{Binding ShowUnreadMentions}" />
+        <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Content="Show unread mentions" IsChecked="{Binding ShowUnreadMessages}" />
+        <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="Show status" IsChecked="{Binding ShowStatus}" />
+        <TextBlock Grid.Row="5" Grid.Column="0" Text="Brightness" />
+        <DockPanel Grid.Row="5" Grid.Column="1" LastChildFill="True">
+            <TextBlock Width="40" Margin="10,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" DockPanel.Dock="Right" Text="{Binding BrightnessPercent, StringFormat=({0:P0})}" />
+            <Slider VerticalAlignment="Center" Minimum="1" Maximum="100" SmallChange="5" Value="{Binding Brightness}" LargeChange="10" />
+        </DockPanel>
 
-
-        <Button Grid.Row="4" Grid.ColumnSpan="2" Content="Save and restart" HorizontalAlignment="Center" Height="24" Width="120" Command="{Binding RestartApplicationCommand}" />
+        <Button Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Content="Save and restart" HorizontalAlignment="Center" Height="24" Width="120" Click="Button_Click" />
     </Grid>
 </Window>

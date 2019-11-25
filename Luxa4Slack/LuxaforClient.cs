@@ -9,7 +9,7 @@
 
   using NLog;
 
-  internal class LuxaforClient : IDisposable
+  public class LuxaforClient : IDisposable
   {
     private const int Timeout = 200;
 
@@ -38,6 +38,12 @@
                                                         };
 
     private IDevice device;
+    private double brightness;
+
+    public LuxaforClient(double brightness = 1)
+    {
+      this.SetBrightness(brightness);
+    }
 
     public bool Initialize()
     {
@@ -56,7 +62,12 @@
       this.device?.Dispose();
     }
 
-    public async Task<bool> SetAsync(Colors color)
+    public void SetBrightness(double brightness)
+    {
+      this.brightness = Math.Max(0, Math.Min(1, brightness));
+    }
+
+    public async Task<bool> SetAsync(Colors color, int timeout = Timeout)
     {
       if (this.device == null)
       {
@@ -64,9 +75,14 @@
       }
       else
       {
-        this.logger.Debug("Set color: {0}", color);
+        this.logger.Debug("Set color: {0} @ {1:P0}", color, this.brightness);
 
-        return await this.device.AllLeds.SetColor(this.colorsMapping[color], timeout: Timeout);
+        var luxaforFinalColor = new Color(
+          (byte) (this.colorsMapping[color].Red * this.brightness),
+          (byte) (this.colorsMapping[color].Green * this.brightness),
+          (byte) (this.colorsMapping[color].Blue * this.brightness));
+
+        return await this.device.AllLeds.SetColor(luxaforFinalColor, timeout: timeout);
       }
     }
 

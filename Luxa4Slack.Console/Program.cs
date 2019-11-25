@@ -28,7 +28,8 @@
             commandLineOptions.Token,
             commandLineOptions.ShowUnreadMentions,
             commandLineOptions.ShowUnreadMessages,
-            commandLineOptions.ShowStatus);
+            commandLineOptions.ShowStatus,
+            commandLineOptions.Brightness);
 
           try
           {

@@ -133,7 +133,7 @@
         {
           this.Client.Connect(x => connectionEvent.Set(), () => connectionSocketEvent.Set());
 
-          return WaitHandle.WaitAll(new WaitHandle[] { connectionEvent, connectionSocketEvent }, Timeout);
+          return new WaitHandle[] { connectionEvent, connectionSocketEvent }.All(x => x.WaitOne(Timeout));
         }
         catch (Exception ex)
         {

@@ -12,6 +12,7 @@
     private readonly bool showUnreadMentions;
     private readonly bool showUnreadMessages;
     private readonly bool showStatus;
+    private readonly double brightness;
 
     private LuxaforClient luxaforClient;
     private SlackNotificationAgent slackAgent;
@@ -19,7 +20,7 @@
     private Task updateTask;
     private int previousWeight;
 
-    public Luxa4Slack(string slackToken, bool showUnreadMentions, bool showUnreadMessages, bool showStatus)
+    public Luxa4Slack(string slackToken, bool showUnreadMentions, bool showUnreadMessages, bool showStatus, double brightness)
     {
       if (slackToken == null)
       {
@@ -30,6 +31,7 @@
       this.showUnreadMentions = showUnreadMentions;
       this.showUnreadMessages = showUnreadMessages;
       this.showStatus = showStatus;
+      this.brightness = brightness;
     }
 
     public event Action LuxaforFailure;
@@ -55,7 +57,7 @@
 
     private async Task<LuxaforClient> InitializeLuxaforClient()
     {
-      var client = new LuxaforClient();
+      var client = new LuxaforClient(this.brightness);
       if (client.Initialize() == false)
       {
         throw new Exception("Luxafor device initialization failed");

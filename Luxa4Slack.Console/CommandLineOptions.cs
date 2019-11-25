@@ -16,6 +16,9 @@
     [Option('s', "showStatus", Default = false, SetName = "run", HelpText = "Show status changes")]
     public bool ShowStatus { get; set; }
 
+    [Option('b', "brightness", Default = true, SetName = "run", HelpText = "Luxafor brightness")]
+    public double Brightness { get; set; }
+
     [Option('d', "debug", Default = false, SetName = "run", HelpText = "Show debug informations")]
     public bool Debug { get; set; }
 

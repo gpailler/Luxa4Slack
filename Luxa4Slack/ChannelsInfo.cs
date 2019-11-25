@@ -1,15 +1,16 @@
 ﻿namespace CG.Luxa4Slack
 {
+  using System;
   using System.Collections;
   using System.Collections.Generic;
   using System.Threading;
-
-  using SlackAPI;
 
   internal class ChannelsInfo : IEnumerable<KeyValuePair<string, ChannelInfo>>
   {
     private readonly Dictionary<string, ChannelInfo> items = new Dictionary<string, ChannelInfo>();
     private readonly object locker = new object();
+
+    public event Action Changed;
 
     public ChannelInfo this[string channelId]
     {
@@ -17,31 +18,15 @@
       {
         lock (this.locker)
         {
-          ChannelInfo channelNotification;
-          if (this.items.TryGetValue(channelId, out channelNotification) == false)
+          if (this.items.TryGetValue(channelId, out var channelNotification) == false)
           {
             channelNotification = new ChannelInfo();
+            channelNotification.Changed += this.OnChanged;
             this.items[channelId] = channelNotification;
           }
 
           return channelNotification;
         }
-      }
-    }
-
-    public ChannelInfo this[Channel channel]
-    {
-      get
-      {
-        return this[channel.id];
-      }
-    }
-
-    public ChannelInfo this[DirectMessageConversation im]
-    {
-      get
-      {
-        return this[im.id];
       }
     }
 
@@ -61,6 +46,11 @@
     IEnumerator IEnumerable.GetEnumerator()
     {
       return this.GetEnumerator();
+    }
+
+    private void OnChanged()
+    {
+      this.Changed?.Invoke();
     }
 
     private class SafeEnumerator<T> : IEnumerator<T>

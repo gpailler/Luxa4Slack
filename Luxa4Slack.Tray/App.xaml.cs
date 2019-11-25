@@ -26,7 +26,7 @@
 
     private Luxa4Slack luxa4Slack;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
       base.OnStartup(e);
 
@@ -49,8 +49,7 @@
       this.showStatus = Settings.Default.ShowStatus;
 
       // Init Luxa4Slack
-      Task.Factory.StartNew(this.Initialize);
-
+      await this.InitializeAsync();
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -61,7 +60,7 @@
       base.OnExit(e);
     }
 
-    private void Initialize()
+    private async Task InitializeAsync()
     {
       if (string.IsNullOrWhiteSpace(this.token))
       {
@@ -72,7 +71,7 @@
         this.luxa4Slack = new Luxa4Slack(this.token, this.showUnreadMentions, this.showUnreadMessages, this.showStatus);
         try
         {
-          this.luxa4Slack.Initialize();
+          await this.luxa4Slack.Initialize();
           this.luxa4Slack.LuxaforFailure += this.OnLuxaforFailure;
         }
         catch (Exception ex)

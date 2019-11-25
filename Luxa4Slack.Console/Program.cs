@@ -1,7 +1,7 @@
 ﻿namespace CG.Luxa4Slack.Console
 {
   using System;
-
+  using System.Threading.Tasks;
   using CommandLine;
 
   using NLog;
@@ -12,7 +12,7 @@
     private static Luxa4Slack luxa4Slack;
     private static CommandLineOptions commandLineOptions;
 
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
       commandLineOptions = ParseCommandLine(args);
       if (commandLineOptions != null)
@@ -32,7 +32,7 @@
 
           try
           {
-            luxa4Slack.Initialize();
+            await luxa4Slack.Initialize();
             luxa4Slack.LuxaforFailure += OnLuxaforFailure;
 
             Console.ReadLine();

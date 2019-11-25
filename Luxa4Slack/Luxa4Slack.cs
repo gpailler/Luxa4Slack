@@ -34,9 +34,11 @@
 
     public event Action LuxaforFailure;
 
-    public void Initialize()
+    public async Task Initialize()
     {
-      this.luxaforClient = this.InitializeLuxaforClient();
+      this.luxaforClient = await this.InitializeLuxaforClient();
+      await this.luxaforClient.StartWaveProcessingAsync();
+
       this.slackAgent = this.InitializeSlackAgent(this.slackToken);
 
       this.slackAgent.Changed += this.OnSlackChanged;
@@ -51,7 +53,7 @@
       this.luxaforClient?.Dispose();
     }
 
-    private LuxaforClient InitializeLuxaforClient()
+    private async Task<LuxaforClient> InitializeLuxaforClient()
     {
       var client = new LuxaforClient();
       if (client.Initialize() == false)
@@ -59,13 +61,13 @@
         throw new Exception("Luxafor device initialization failed");
       }
       
-      if (client.Test())
+      if (await client.TestAsync())
       {
         return client;
       }
       else
       {
-        throw  new Exception("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
+        throw new Exception("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
       }
     }
 
@@ -116,28 +118,28 @@
       return weight;
     }
 
-    private void UpdateLuxaforAsync(Task task)
+    private async Task UpdateLuxaforAsync(Task task)
     {
       bool result;
       if (this.showUnreadMentions && this.slackAgent.HasUnreadMentions)
       {
-        result = this.luxaforClient.Set(LuxaforClient.Colors.Cyan);
+        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Cyan);
       }
       else if (this.showUnreadMessages && this.slackAgent.HasUnreadMessages)
       {
-        result = this.luxaforClient.Set(LuxaforClient.Colors.Blue);
+        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Blue);
       }
       else if (this.showStatus && this.slackAgent.IsAway)
       {
-        result = this.luxaforClient.Set(LuxaforClient.Colors.Red);
+        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Red);
       }
       else if (this.showStatus && this.slackAgent.IsAway == false)
       {
-        result = this.luxaforClient.Set(LuxaforClient.Colors.Green);
+        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Green);
       }
       else
       {
-        result = this.luxaforClient.Reset();
+        result = await this.luxaforClient.ResetAsync();
       }
 
       if (result == false)

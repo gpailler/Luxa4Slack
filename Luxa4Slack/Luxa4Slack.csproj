@@ -71,12 +71,20 @@
     </Compile>
     <Compile Include="ChannelInfo.cs" />
     <Compile Include="ChannelsInfo.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="IRawMessage.cs" />
     <Compile Include="JsonRawConverter.cs" />
     <Compile Include="Luxa4Slack.cs" />
     <Compile Include="LuxaforClient.cs" />
+    <Compile Include="MessageHandlers\ChannelHandler.cs" />
+    <Compile Include="MessageHandlers\GroupHandler.cs" />
+    <Compile Include="MessageHandlers\ChannelHandlerBase.cs" />
+    <Compile Include="MessageHandlers\PresenceHandler.cs" />
+    <Compile Include="MessageHandlers\MessageHandlerBase.cs" />
+    <Compile Include="MessageHandlers\ImHandler.cs" />
     <Compile Include="OAuthHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadableNameResolver.cs" />
     <Compile Include="SlackNotificationAgentReconnectable.cs" />
     <Compile Include="SlackNotificationAgent.cs" />
     <Compile Include="SlackSocketExtraMessages.cs" />

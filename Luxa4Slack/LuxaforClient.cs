@@ -4,7 +4,7 @@
   using System.Collections.Generic;
   using System.Linq;
   using System.Threading;
-
+  using System.Threading.Tasks;
   using LuxaforSharp;
 
   using NLog;
@@ -56,7 +56,7 @@
       this.device?.Dispose();
     }
 
-    public bool Set(Colors color)
+    public async Task<bool> SetAsync(Colors color)
     {
       if (this.device == null)
       {
@@ -66,23 +66,27 @@
       {
         this.logger.Debug("Set color: {0}", color);
 
-        return this.device.AllLeds.SetColor(this.colorsMapping[color]).Wait(Timeout);
+        return await this.device.AllLeds.SetColor(this.colorsMapping[color], timeout: Timeout);
       }
     }
 
-    public bool Reset()
+    public async Task<bool> ResetAsync()
     {
-      return this.Set(Colors.None);
+      return await this.SetAsync(Colors.None);
     }
 
-    public bool Test()
+    public async Task<bool> TestAsync()
     {
       this.logger.Debug("Test device");
 
-      bool result = this.Set(Colors.White);
-      Thread.Sleep(200);
+      var result = await this.SetAsync(Colors.White);
+      await Task.Delay(200);
+      return result && await this.SetAsync(Colors.None);
+    }
 
-      return result && this.Set(Colors.None);
+    public async Task<bool> StartWaveProcessingAsync()
+    {
+      return await this.device.Wave(WaveType.OverlappingShort, colorsMapping[Colors.Yellow], 4, byte.MaxValue);
     }
   }
 }

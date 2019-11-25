@@ -8,7 +8,7 @@
   {
     private const int DelayBeforeUpdate = 2000;
     
-    public readonly string slackToken;
+    private readonly string slackToken;
     private readonly bool showUnreadMentions;
     private readonly bool showUnreadMessages;
     private readonly bool showStatus;
@@ -112,7 +112,7 @@
       int weight = 0;
       weight += this.showUnreadMentions && this.slackAgent.HasUnreadMentions ? 2 : 0;
       weight += this.showUnreadMessages && this.slackAgent.HasUnreadMessages ? 1 : 0;
-      
+
       return weight;
     }
 
@@ -127,11 +127,11 @@
       {
         result = this.luxaforClient.Set(LuxaforClient.Colors.Blue);
       }
-      else if (this.showStatus && this.slackAgent.isAway)
+      else if (this.showStatus && this.slackAgent.IsAway)
       {
         result = this.luxaforClient.Set(LuxaforClient.Colors.Red);
       }
-      else if (this.showStatus && this.slackAgent.isAway == false)
+      else if (this.showStatus && this.slackAgent.IsAway == false)
       {
         result = this.luxaforClient.Set(LuxaforClient.Colors.Green);
       }

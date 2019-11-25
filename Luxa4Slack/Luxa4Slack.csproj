@@ -48,7 +48,7 @@
       <HintPath>..\packages\NLog.4.6.6\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="SlackAPI, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SlackAPI.1.1.1\lib\net45\SlackAPI.dll</HintPath>
+      <HintPath>..\packages\SlackAPI.1.1.3\lib\net45\SlackAPI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -71,7 +71,6 @@
     </Compile>
     <Compile Include="ChannelInfo.cs" />
     <Compile Include="ChannelsInfo.cs" />
-    <Compile Include="SlackClient.cs" />
     <Compile Include="IRawMessage.cs" />
     <Compile Include="JsonRawConverter.cs" />
     <Compile Include="Luxa4Slack.cs" />

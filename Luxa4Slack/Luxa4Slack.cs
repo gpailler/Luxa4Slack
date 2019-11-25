@@ -125,7 +125,7 @@
       bool result;
       if (this.showUnreadMentions && this.slackAgent.HasUnreadMentions)
       {
-        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Cyan);
+        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Orange);
       }
       else if (this.showUnreadMessages && this.slackAgent.HasUnreadMessages)
       {

@@ -23,7 +23,8 @@
       Green,
       Yellow,
       Blue,
-      Cyan
+      Cyan,
+      Orange
     }
 
     private readonly Dictionary<Colors, Color> colorsMapping = new Dictionary<Colors, Color>
@@ -35,6 +36,7 @@
                                                           { Colors.Yellow, new Color(255, 255, 0) },
                                                           { Colors.Blue, new Color(0, 0, 255) },
                                                           { Colors.Cyan, new Color(0, 255, 255) },
+                                                          { Colors.Orange, new Color(0xFF, 0x66, 0) },
                                                         };
 
     private IDevice device;

@@ -34,7 +34,7 @@ artifacts:
 deploy:
 - provider: GitHub
   auth_token:
-    secure: fUfvn0AxoiLyyw4vz+0XESvl/FibBKHSfQwAYquPQqI9AwHhoPd4qNZonfjvLTuf
+    secure: Zpfn0sAzIIuU5hWnolOEZgISLu1ygUes6MGQWWDUQUva8tbgelatfrtCKB2RI3io
   artifact: Luxa4Slack
   draft: true
   on:

@@ -26,7 +26,3 @@ Your Luxafor device switches to red color if you have unread mention(s) and blue
 ## Throubleshooting
 - Luxafor device is sometimes not properly detected and an error message is displayed. Unplug the device, wait few seconds,  plug it again and start Luxa4Slack again.
 - You should stop other applications using your Luxafor to use Luxa4Slack.
-
-### Donations :gift:
-Donations are always welcomed :smile:
-https://www.paypal.me/gpailler

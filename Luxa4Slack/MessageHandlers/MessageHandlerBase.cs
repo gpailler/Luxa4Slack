@@ -76,7 +76,7 @@
     {
       if (message.type == "message")
       {
-        if (this.IsRegularMessage(message.user, message.subtype) && this.ShouldMonitor(message.channel))
+        if (this.IsRegularMessage(message.user, message.subtype) && this.ShouldMonitor(message.channel) && (message.thread_ts == DateTime.MinValue || this.HasMention(this.GetRawMessage(message))))
         {
           this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.ReadableNameResolver.Resolve(message.channel)} - Raw: {this.GetRawMessage(message)}");
 

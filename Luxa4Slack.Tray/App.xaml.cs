@@ -34,7 +34,7 @@
 
       // Init tray
       this.notifyIcon = (TaskbarIcon)this.FindResource("NotifyIcon");
-      this.viewModel = new TrayViewModel();
+      this.viewModel = new TrayViewModel(this.ReInitializeLuxa4Slack);
       this.notifyIcon.DataContext = this.viewModel;
 
       // Upgrade settings if needed
@@ -61,6 +61,12 @@
       this.notifyIcon.Dispose();
 
       base.OnExit(e);
+    }
+
+    private void ReInitializeLuxa4Slack()
+    {
+      this.luxa4Slack?.Dispose();
+      Task.Factory.StartNew(async () => await this.InitializeAsync());
     }
 
     private async Task InitializeAsync()

@@ -1,9 +1,9 @@
 ﻿namespace CG.Luxa4Slack.Tray
 {
+  using System;
   using System.Diagnostics;
   using System.Threading;
   using System.Threading.Tasks;
-  using System.Windows;
   using System.Windows.Input;
 
   using GalaSoft.MvvmLight;
@@ -11,13 +11,15 @@
 
   public class PreferencesViewModel : ViewModelBase
   {
+    private readonly Action preferencesUpdated;
+    private readonly LuxaforClient luxaforClient;
     private int brightness;
-    private LuxaforClient luxaforClient;
     private CancellationTokenSource cancellationTokenSource;
 
-    public PreferencesViewModel()
+    public PreferencesViewModel(Action preferencesUpdated)
     {
-      this.RestartApplicationCommand = new RelayCommand(this.RestartApplication);
+      this.preferencesUpdated = preferencesUpdated;
+      this.UpdatePreferencesCommand = new RelayCommand(this.UpdatePreferences);
       this.RequestTokenCommand = new RelayCommand(() => Process.Start(OAuthHelper.GetAuthorizationUri().ToString()));
       this.Title = $"{App.AppName} - Preferences";
       this.Token = Properties.Settings.Default.Token;
@@ -30,7 +32,7 @@
       this.BrightnessPercent = Properties.Settings.Default.Brighness;
     }
 
-    public ICommand RestartApplicationCommand { get; private set; }
+    public ICommand UpdatePreferencesCommand { get; private set; }
 
     public ICommand RequestTokenCommand { get; private set; }
 
@@ -78,7 +80,7 @@
       }, cancellationTokenSource.Token);
     }
 
-    private void RestartApplication()
+    private void UpdatePreferences()
     {
       Properties.Settings.Default.Token = this.Token;
       Properties.Settings.Default.ShowUnreadMentions = this.ShowUnreadMentions;
@@ -87,8 +89,7 @@
       Properties.Settings.Default.Brighness = this.BrightnessPercent;
       Properties.Settings.Default.Save();
 
-      Process.Start(Application.ResourceAssembly.Location);
-      Application.Current.Shutdown();
+      this.preferencesUpdated?.Invoke();
     }
   }
 }

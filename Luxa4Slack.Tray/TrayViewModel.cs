@@ -11,13 +11,14 @@
 
   public class TrayViewModel : ViewModelBase
   {
+    private readonly Action preferencesUpdated;
     private readonly BitmapImage icon = new BitmapImage(new Uri("pack://application:,,,/Luxa4Slack.Tray;component/Icon.ico"));
     private readonly BitmapImage iconError = new BitmapImage(new Uri("pack://application:,,,/Luxa4Slack.Tray;component/IconError.ico"));
 
-    public TrayViewModel()
+    public TrayViewModel(Action preferencesUpdated)
     {
+      this.preferencesUpdated = preferencesUpdated;
       this.ShowPreferencesCommand = new RelayCommand(this.ShowPreferences, () => Application.Current.MainWindow == null);
-
       this.ExitApplicationCommand = new RelayCommand(() => Application.Current.Shutdown());
       this.Icon = this.icon;
     }
@@ -39,7 +40,7 @@
     private void ShowPreferences()
     {
       Application.Current.MainWindow = new Preferences();
-      Application.Current.MainWindow.DataContext = new PreferencesViewModel();
+      Application.Current.MainWindow.DataContext = new PreferencesViewModel(preferencesUpdated);
       Application.Current.MainWindow.Show();
     }
   }

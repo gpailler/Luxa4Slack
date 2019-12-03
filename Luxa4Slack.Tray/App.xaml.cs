@@ -16,16 +16,6 @@
 
     private TrayViewModel viewModel;
 
-    private string token;
-
-    private bool showUnreadMentions;
-
-    private bool showUnreadMessages;
-
-    private bool showStatus;
-
-    private double brightness;
-
     private Luxa4Slack luxa4Slack;
 
     protected override async void OnStartup(StartupEventArgs e)
@@ -44,12 +34,6 @@
         Settings.Default.ShouldUpgrade = false;
         Settings.Default.Save();
       }
-
-      this.token = Settings.Default.Token;
-      this.showUnreadMentions = Settings.Default.ShowUnreadMentions;
-      this.showUnreadMessages = Settings.Default.ShowUnreadMessages;
-      this.showStatus = Settings.Default.ShowStatus;
-      this.brightness = Settings.Default.Brighness;
 
       // Init Luxa4Slack
       await this.InitializeAsync();
@@ -71,13 +55,18 @@
 
     private async Task InitializeAsync()
     {
-      if (string.IsNullOrWhiteSpace(this.token))
+      if (string.IsNullOrWhiteSpace(Settings.Default.Token))
       {
         this.Dispatcher.Invoke(() => this.viewModel.ShowPreferencesCommand.Execute(null));
       }
       else
       {
-        this.luxa4Slack = new Luxa4Slack(this.token, this.showUnreadMentions, this.showUnreadMessages, this.showStatus, this.brightness);
+        this.luxa4Slack = new Luxa4Slack(
+          Settings.Default.Token,
+          Settings.Default.ShowUnreadMentions,
+          Settings.Default.ShowUnreadMessages,
+          Settings.Default.ShowStatus,
+          Settings.Default.Brighness);
         try
         {
           await this.luxa4Slack.Initialize();

@@ -15,7 +15,7 @@
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closed">
-            <command:EventToCommand Command="{Binding RestartApplicationCommand}" />
+            <command:EventToCommand Command="{Binding UpdatePreferencesCommand}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
@@ -63,6 +63,6 @@
             <Slider VerticalAlignment="Center" Minimum="1" Maximum="100" SmallChange="5" Value="{Binding Brightness}" LargeChange="10" />
         </DockPanel>
 
-        <Button Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Content="Save and restart" HorizontalAlignment="Center" Height="24" Width="120" Click="Button_Click" />
+        <Button Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Content="Save" HorizontalAlignment="Center" Height="24" Width="120" Click="Button_Click" />
     </Grid>
 </Window>

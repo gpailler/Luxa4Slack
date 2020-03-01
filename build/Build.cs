@@ -5,6 +5,7 @@ using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Tools.NuGet;
@@ -27,7 +28,7 @@ class Build : NukeBuild
     [Solution]
     readonly Solution Solution;
 
-    [GitVersion]
+    [GitVersion(Framework = "netcoreapp3.0")]
     readonly GitVersion GitVersion;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
@@ -56,24 +57,31 @@ class Build : NukeBuild
             );
         });
 
+    Target PatchVersion => _ => _
+        .Executes(() =>
+        {
+            GitVersionTasks.GitVersion(_ => _
+                .SetFramework("netcoreapp3.0")
+                .SetArgumentConfigurator(_ => _
+                    .Add("/updateassemblyinfo {value}", SourceDirectory / "GlobalAssemblyInfo.cs")
+                )
+            );
+        });
+
     Target Compile => _ => _
-        .DependsOn(Restore)
+        .DependsOn(Restore, PatchVersion)
         .Executes(() =>
         {
             MSBuild(_ => _
                 .SetTargetPath(Solution)
                 .SetTargets("Rebuild")
                 .SetConfiguration(Configuration)
-                .SetAssemblyVersion(GitVersion.AssemblySemVer)
-                .SetFileVersion(GitVersion.AssemblySemFileVer)
-                .SetInformationalVersion(GitVersion.InformationalVersion)
                 .SetMaxCpuCount(Environment.ProcessorCount)
                 .SetNodeReuse(IsLocalBuild));
         });
 
     Target Pack => _ => _
-        .DependsOn(Clean)
-        .DependsOn(Compile)
+        .DependsOn(Clean, Compile)
         .Executes(() =>
         {
             var extensions = new[] { ".exe", ".exe.config", ".dll" };

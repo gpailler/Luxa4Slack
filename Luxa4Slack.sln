@@ -9,13 +9,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		GlobalAssemblyInfo.cs = GlobalAssemblyInfo.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack", "Luxa4Slack\Luxa4Slack.csproj", "{0E48DD4A-74D2-4C38-9B55-FCF0C17CAFD1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack", "src\Luxa4Slack\Luxa4Slack.csproj", "{0E48DD4A-74D2-4C38-9B55-FCF0C17CAFD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.Console", "Luxa4Slack.Console\Luxa4Slack.Console.csproj", "{AEB64042-7E5E-4D8A-82B4-C583569517DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.Console", "src\Luxa4Slack.Console\Luxa4Slack.Console.csproj", "{AEB64042-7E5E-4D8A-82B4-C583569517DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.Tray", "Luxa4Slack.Tray\Luxa4Slack.Tray.csproj", "{964EBFBE-A600-49B2-BDD8-422B46F1D544}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.Tray", "src\Luxa4Slack.Tray\Luxa4Slack.Tray.csproj", "{964EBFBE-A600-49B2-BDD8-422B46F1D544}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.OAuth.AzureFunctions", "Luxa4Slack.OAuth.AzureFunctions\Luxa4Slack.OAuth.AzureFunctions.csproj", "{97C3955F-215E-4E71-942F-7BE2A9749A59}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.OAuth.AzureFunctions", "src\Luxa4Slack.OAuth.AzureFunctions\Luxa4Slack.OAuth.AzureFunctions.csproj", "{97C3955F-215E-4E71-942F-7BE2A9749A59}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{C8AD61D9-1BAA-4B0E-A980-AC7CBF60C29C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,6 +25,8 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8AD61D9-1BAA-4B0E-A980-AC7CBF60C29C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8AD61D9-1BAA-4B0E-A980-AC7CBF60C29C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E48DD4A-74D2-4C38-9B55-FCF0C17CAFD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0E48DD4A-74D2-4C38-9B55-FCF0C17CAFD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E48DD4A-74D2-4C38-9B55-FCF0C17CAFD1}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,42 +1,9 @@
-version: 1.1.1.{build}
+image:
+  - Visual Studio 2019
 
-image: Visual Studio 2019
-
-assembly_info:
-  patch: true
-  file: GlobalAssemblyInfo.cs
-  assembly_version: '{version}'
-  assembly_file_version: '{version}'
-  assembly_informational_version: '{version}'
-
-configuration: Release
-platform: Any CPU
-
-before_build:
-- appveyor-retry nuget restore
-
-build:
-  project: Luxa4Slack.sln
-  verbosity: minimal
-
-after_build:
-- cmd: >-
-    del /Q bin\Release\*.xml
-
-    del /Q bin\Release\*.pdb
-
-    7z a Luxa4Slack-%APPVEYOR_BUILD_VERSION%.zip %CD%\bin\Release\*
+build_script:
+  - ps: .\build.ps1 Pack
 
 artifacts:
-- path: Luxa4Slack-*.zip
-  name: Luxa4Slack
-
-deploy:
-- provider: GitHub
-  auth_token:
-    secure: Zpfn0sAzIIuU5hWnolOEZgISLu1ygUes6MGQWWDUQUva8tbgelatfrtCKB2RI3io
-  artifact: Luxa4Slack
-  draft: true
-  on:
-    branch: master
-    appveyor_repo_tag: true
+  - path: artifacts/Luxa4Slack-*.zip
+    name: Artifact

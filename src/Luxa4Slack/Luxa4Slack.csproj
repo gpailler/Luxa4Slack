@@ -104,6 +104,7 @@
     <Compile Include="SlackNotificationAgentReconnectable.cs" />
     <Compile Include="SlackNotificationAgent.cs" />
     <Compile Include="SlackSocketExtraMessages.cs" />
+    <Compile Include="WorkspaceHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

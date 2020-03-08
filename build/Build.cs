@@ -17,7 +17,6 @@ using static Nuke.Common.Tools.NuGet.NuGetTasks;
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
-[AppVeyor(AppVeyorImage.VisualStudio2019, AutoGenerate = false, InvokedTargets = new[] { nameof(Pack) })]
 class Build : NukeBuild
 {
     public static int Main () => Execute<Build>(x => x.Compile);
@@ -28,7 +27,7 @@ class Build : NukeBuild
     [Solution]
     readonly Solution Solution;
 
-    [GitVersion(Framework = "netcoreapp3.0")]
+    [GitVersion(Framework = "netcoreapp3.1")]
     readonly GitVersion GitVersion;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
@@ -61,7 +60,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             GitVersionTasks.GitVersion(_ => _
-                .SetFramework("netcoreapp3.0")
+                .SetFramework("netcoreapp3.1")
                 .SetArgumentConfigurator(_ => _
                     .Add("/updateassemblyinfo {value}", SourceDirectory / "GlobalAssemblyInfo.cs")
                 )

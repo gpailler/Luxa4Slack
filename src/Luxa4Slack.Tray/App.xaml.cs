@@ -1,6 +1,7 @@
 ﻿namespace CG.Luxa4Slack.Tray
 {
   using System;
+  using System.Linq;
   using System.Threading.Tasks;
   using System.Windows;
 
@@ -55,14 +56,14 @@
 
     private async Task InitializeAsync()
     {
-      if (string.IsNullOrWhiteSpace(Settings.Default.Token))
+      if (Settings.Default.Tokens == null || Settings.Default.Tokens.Count == 0)
       {
         this.Dispatcher.Invoke(() => this.viewModel.ShowPreferencesCommand.Execute(null));
       }
       else
       {
         this.luxa4Slack = new Luxa4Slack(
-          Settings.Default.Token,
+          Settings.Default.Tokens.OfType<string>(),
           Settings.Default.ShowUnreadMentions,
           Settings.Default.ShowUnreadMessages,
           Settings.Default.ShowStatus,

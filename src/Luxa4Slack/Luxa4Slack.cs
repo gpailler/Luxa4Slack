@@ -1,37 +1,40 @@
 ﻿namespace CG.Luxa4Slack
 {
   using System;
+  using System.Collections.Generic;
+  using System.Linq;
   using System.Threading;
   using System.Threading.Tasks;
 
   public class Luxa4Slack
   {
     private const int DelayBeforeUpdate = 2000;
-    
-    private readonly string slackToken;
+
+    private readonly IEnumerable<string> slackTokens;
     private readonly bool showUnreadMentions;
     private readonly bool showUnreadMessages;
     private readonly bool showStatus;
     private readonly double brightness;
 
     private LuxaforClient luxaforClient;
-    private SlackNotificationAgent slackAgent;
+    private List<SlackNotificationAgent> slackAgents;
     private CancellationTokenSource cancellationTokenSource;
     private Task updateTask;
     private int previousWeight;
 
-    public Luxa4Slack(string slackToken, bool showUnreadMentions, bool showUnreadMessages, bool showStatus, double brightness)
+    public Luxa4Slack(IEnumerable<string> slackTokens, bool showUnreadMentions, bool showUnreadMessages, bool showStatus, double brightness)
     {
-      if (slackToken == null)
+      this.slackTokens = slackTokens ?? throw new ArgumentNullException(nameof(slackTokens));
+      if (!this.slackTokens.Any())
       {
-        throw new ArgumentNullException(nameof(slackToken));
+        throw new ArgumentException("Empty tokens list", nameof(slackTokens));
       }
 
-      this.slackToken = slackToken;
       this.showUnreadMentions = showUnreadMentions;
       this.showUnreadMessages = showUnreadMessages;
       this.showStatus = showStatus;
       this.brightness = brightness;
+      this.slackAgents = new List<SlackNotificationAgent>();
     }
 
     public event Action LuxaforFailure;
@@ -41,9 +44,13 @@
       this.luxaforClient = await this.InitializeLuxaforClient();
       await this.luxaforClient.StartWaveProcessingAsync();
 
-      this.slackAgent = this.InitializeSlackAgent(this.slackToken);
+      foreach (var slackToken in this.slackTokens)
+      {
+        var slackAgent = this.InitializeSlackAgent(slackToken);
+        slackAgent.Changed += this.OnSlackChanged;
+        this.slackAgents.Add(slackAgent);
+      }
 
-      this.slackAgent.Changed += this.OnSlackChanged;
       this.OnSlackChanged();
     }
 
@@ -51,7 +58,7 @@
     {
       this.LuxaforFailure = null;
 
-      this.slackAgent?.Dispose();
+      this.slackAgents?.ForEach(x => x.Dispose());
       this.luxaforClient?.Dispose();
     }
 
@@ -62,7 +69,7 @@
       {
         throw new Exception("Luxafor device initialization failed");
       }
-      
+
       if (await client.TestAsync())
       {
         return client;
@@ -114,8 +121,8 @@
     private int GetWeight()
     {
       int weight = 0;
-      weight += this.showUnreadMentions && this.slackAgent.HasUnreadMentions ? 2 : 0;
-      weight += this.showUnreadMessages && this.slackAgent.HasUnreadMessages ? 1 : 0;
+      weight += this.showUnreadMentions && this.slackAgents.Any(x => x.HasUnreadMentions) ? 2 : 0;
+      weight += this.showUnreadMessages && this.slackAgents.Any(x => x.HasUnreadMessages) ? 1 : 0;
 
       return weight;
     }
@@ -123,19 +130,19 @@
     private async Task UpdateLuxaforAsync(Task task)
     {
       bool result;
-      if (this.showUnreadMentions && this.slackAgent.HasUnreadMentions)
+      if (this.showUnreadMentions && this.slackAgents.Any(x => x.HasUnreadMentions))
       {
         result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Orange);
       }
-      else if (this.showUnreadMessages && this.slackAgent.HasUnreadMessages)
+      else if (this.showUnreadMessages && this.slackAgents.Any(x => x.HasUnreadMessages))
       {
         result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Blue);
       }
-      else if (this.showStatus && this.slackAgent.IsAway)
+      else if (this.showStatus && this.slackAgents.Any(x => x.IsAway))
       {
         result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Red);
       }
-      else if (this.showStatus && this.slackAgent.IsAway == false)
+      else if (this.showStatus && this.slackAgents.Any(x => x.IsAway == false))
       {
         result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Green);
       }

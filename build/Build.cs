@@ -88,6 +88,6 @@ class Build : NukeBuild
             CompressZip(
                 OutputDirectory,
                 ArtifactFile,
-                info => extensions.Contains(info.Extension));
+                info => extensions.Any(extension => info.Name.EndsWith(extension)));
         });
 }

@@ -1,11 +1,12 @@
 ﻿namespace CG.Luxa4Slack.Console
 {
+  using System.Collections.Generic;
   using CommandLine;
 
   public class CommandLineOptions
   {
-    [Option('t', "token", Required = true, SetName = "run", HelpText = "Slack token (use --requesttoken option)")]
-    public string Token { get; set; }
+    [Option('t', "tokens", Required = true, SetName = "run", HelpText = "Slack token (use --requesttoken option)")]
+    public IEnumerable<string> Tokens { get; set; }
 
     [Option('m', "showUnreadMessages", Default = true, SetName = "run", HelpText = "Show unread messages")]
     public bool ShowUnreadMessages { get; set; }

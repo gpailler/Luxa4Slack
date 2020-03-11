@@ -25,7 +25,7 @@
         else
         {
           luxa4Slack = new Luxa4Slack(
-            commandLineOptions.Token,
+            commandLineOptions.Tokens,
             commandLineOptions.ShowUnreadMentions,
             commandLineOptions.ShowUnreadMessages,
             commandLineOptions.ShowStatus,

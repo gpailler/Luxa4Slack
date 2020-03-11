@@ -27,7 +27,7 @@ class Build : NukeBuild
     [Solution]
     readonly Solution Solution;
 
-    [GitVersion(Framework = "netcoreapp3.1")]
+    [GitVersion(Framework = "netcoreapp2.1")]
     readonly GitVersion GitVersion;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
@@ -60,7 +60,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             GitVersionTasks.GitVersion(_ => _
-                .SetFramework("netcoreapp3.1")
+                .SetFramework("netcoreapp2.1")
                 .SetArgumentConfigurator(_ => _
                     .Add("/updateassemblyinfo {value}", SourceDirectory / "GlobalAssemblyInfo.cs")
                 )
@@ -88,6 +88,6 @@ class Build : NukeBuild
             CompressZip(
                 OutputDirectory,
                 ArtifactFile,
-                info => extensions.Contains(info.Extension));
+                info => extensions.Any(extension => info.Name.EndsWith(extension)));
         });
 }

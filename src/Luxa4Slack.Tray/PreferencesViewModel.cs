@@ -1,7 +1,10 @@
 ﻿namespace CG.Luxa4Slack.Tray
 {
   using System;
+  using System.Collections.ObjectModel;
+  using System.Collections.Specialized;
   using System.Diagnostics;
+  using System.Linq;
   using System.Threading;
   using System.Threading.Tasks;
   using System.Windows.Input;
@@ -14,6 +17,7 @@
     private readonly Action preferencesUpdated;
     private readonly LuxaforClient luxaforClient;
     private int brightness;
+    private string newToken;
     private CancellationTokenSource cancellationTokenSource;
 
     public PreferencesViewModel(Action preferencesUpdated)
@@ -21,8 +25,10 @@
       this.preferencesUpdated = preferencesUpdated;
       this.UpdatePreferencesCommand = new RelayCommand(this.UpdatePreferences);
       this.RequestTokenCommand = new RelayCommand(() => Process.Start(OAuthHelper.GetAuthorizationUri().ToString()));
+      this.RemoveTokenCommand = new RelayCommand<SlackToken>(x => this.Tokens.Remove(x));
+      this.AddTokenCommand = new RelayCommand(() => this.AddToken());
       this.Title = $"{App.AppName} - Preferences";
-      this.Token = Properties.Settings.Default.Token;
+      this.Tokens = new ObservableCollection<SlackToken>();
       this.ShowUnreadMentions = Properties.Settings.Default.ShowUnreadMentions;
       this.ShowUnreadMessages = Properties.Settings.Default.ShowUnreadMessages;
       this.ShowStatus = Properties.Settings.Default.ShowStatus;
@@ -30,15 +36,27 @@
       this.luxaforClient = new LuxaforClient();
       this.luxaforClient.Initialize();
       this.BrightnessPercent = Properties.Settings.Default.Brighness;
+
+      if (Properties.Settings.Default.Tokens != null)
+      {
+        foreach (var token in Properties.Settings.Default.Tokens)
+        {
+          this.Tokens.Add(new SlackToken(token));
+        }
+      }
     }
 
-    public ICommand UpdatePreferencesCommand { get; private set; }
+    public ICommand UpdatePreferencesCommand { get; }
 
-    public ICommand RequestTokenCommand { get; private set; }
+    public ICommand RequestTokenCommand { get; }
+
+    public ICommand RemoveTokenCommand { get; }
+
+    public ICommand AddTokenCommand { get; }
 
     public string Title { get; }
 
-    public string Token { get; set; }
+    public ObservableCollection<SlackToken> Tokens { get; set; }
 
     public bool ShowUnreadMentions { get; set; }
 
@@ -66,7 +84,17 @@
       get => this.Brightness / 100d;
       set => this.Brightness = (int)(value * 100d);
     }
-    
+
+    public string NewToken
+    {
+      get { return this.newToken ?? string.Empty; }
+      set
+      {
+        this.newToken = value;
+        this.RaisePropertyChanged();
+      }
+    }
+
     private void UpdateLuxafor(double brightnessPercent)
     {
       // Cancel pending updates
@@ -82,7 +110,9 @@
 
     private void UpdatePreferences()
     {
-      Properties.Settings.Default.Token = this.Token;
+      var tokensCollection = new StringCollection();
+      tokensCollection.AddRange(this.Tokens.Select(x => x.Token).ToArray());
+      Properties.Settings.Default.Tokens = tokensCollection;
       Properties.Settings.Default.ShowUnreadMentions = this.ShowUnreadMentions;
       Properties.Settings.Default.ShowUnreadMessages = this.ShowUnreadMessages;
       Properties.Settings.Default.ShowStatus = this.ShowStatus;
@@ -90,6 +120,35 @@
       Properties.Settings.Default.Save();
 
       this.preferencesUpdated?.Invoke();
+    }
+
+    private void AddToken()
+    {
+      var newToken = this.NewToken?.Trim();
+      if (!string.IsNullOrEmpty(newToken))
+      {
+        this.Tokens.Add(new SlackToken(newToken));
+        this.NewToken = null;
+      }
+    }
+
+    public class SlackToken : ViewModelBase
+    {
+      public SlackToken(string token)
+      {
+        this.Token = token;
+        this.Workspace = "Loading...";
+
+        Task.Run(() =>
+        {
+          this.Workspace = WorkspaceHelper.GetWorkspace(token);
+          this.RaisePropertyChanged(nameof(this.Workspace));
+        });
+      }
+
+      public string Token { get; }
+
+      public string Workspace { get; private set; }
     }
   }
 }

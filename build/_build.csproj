@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NSIS-Tool" Version="3.0.5" />
     <PackageReference Include="NuGet.CommandLine" Version="5.4.0" />
     <PackageReference Include="Nuke.Common" Version="0.24.4" />
     <PackageDownload Include="GitVersion.Tool" Version="[5.2.0]" />

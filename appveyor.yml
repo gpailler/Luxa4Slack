@@ -2,8 +2,11 @@ image:
   - Visual Studio 2019
 
 build_script:
-  - ps: .\build.ps1 Pack
+  - ps: .\build.ps1 Pack BuildInstaller
 
 artifacts:
   - path: artifacts/Luxa4Slack-*.zip
     name: Artifact
+
+  - path: artifacts/Luxa4Slack.Installer-*.exe
+    name: Installer

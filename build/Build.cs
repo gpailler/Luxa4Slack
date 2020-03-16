@@ -30,6 +30,13 @@ class Build : NukeBuild
     [GitVersion(Framework = "netcoreapp2.1")]
     readonly GitVersion GitVersion;
 
+    [PackageExecutable(
+        packageId: "NSIS-Tool",
+        packageExecutable: "makensis.exe",
+        Version = "3.0.5",
+        Framework = "tools")]
+    readonly Tool Nsis;
+
     AbsolutePath SourceDirectory => RootDirectory / "src";
 
     AbsolutePath OutputDirectory => RootDirectory / "bin" / Configuration;
@@ -37,6 +44,8 @@ class Build : NukeBuild
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
     AbsolutePath ArtifactFile => ArtifactsDirectory / $"{Solution.Name}-{GitVersion.FullSemVer}.zip";
+
+    AbsolutePath InstallerFile => SourceDirectory / "Luxa4Slack.Installer" / "Luxa4Slack.Installer.nsi";
 
     Target Clean => _ => _
         .Before(Restore)
@@ -89,5 +98,15 @@ class Build : NukeBuild
                 OutputDirectory,
                 ArtifactFile,
                 info => extensions.Any(extension => info.Name.EndsWith(extension)));
+        });
+
+    Target BuildInstaller => _ => _
+        .DependsOn(Clean, Compile)
+        .Executes(() =>
+        {
+            Nsis(
+                arguments: $"/V4 {InstallerFile}",
+                workingDirectory: InstallerFile.Parent,
+                logOutput: true);
         });
 }

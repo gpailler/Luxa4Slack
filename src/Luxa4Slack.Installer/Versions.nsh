@@ -1,0 +1,3 @@
+  !define VERSIONMAJOR 1
+  !define VERSIONMINOR 0
+  !define VERSIONPATCH 0

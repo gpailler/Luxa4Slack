@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Nuke.Common;
-using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
@@ -12,6 +11,9 @@ using Nuke.Common.Tools.NuGet;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.CompressionTasks;
 using static Nuke.Common.IO.FileSystemTasks;
+using static Nuke.Common.IO.TextTasks;
+using static Nuke.Common.Logger;
+using static Nuke.Common.Tools.GitVersion.GitVersionTasks;
 using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.NuGet.NuGetTasks;
 
@@ -30,6 +32,13 @@ class Build : NukeBuild
     [GitVersion(Framework = "netcoreapp2.1")]
     readonly GitVersion GitVersion;
 
+    [PackageExecutable(
+        packageId: "NSIS-Tool",
+        packageExecutable: "makensis.exe",
+        Version = "3.0.5",
+        Framework = "tools")]
+    readonly Tool MakeNsis;
+
     AbsolutePath SourceDirectory => RootDirectory / "src";
 
     AbsolutePath OutputDirectory => RootDirectory / "bin" / Configuration;
@@ -37,6 +46,12 @@ class Build : NukeBuild
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
     AbsolutePath ArtifactFile => ArtifactsDirectory / $"{Solution.Name}-{GitVersion.FullSemVer}.zip";
+
+    AbsolutePath InstallerFile => SourceDirectory / "Luxa4Slack.Installer" / "Luxa4Slack.Installer.nsi";
+
+    AbsolutePath InstallerVersionsFile => SourceDirectory / "Luxa4Slack.Installer" / "Versions.nsh";
+
+    AbsolutePath GlobalAssemblyInfoFile => SourceDirectory / "GlobalAssemblyInfo.cs";
 
     Target Clean => _ => _
         .Before(Restore)
@@ -59,12 +74,22 @@ class Build : NukeBuild
     Target PatchVersion => _ => _
         .Executes(() =>
         {
-            GitVersionTasks.GitVersion(_ => _
+            Info("Patch " + GlobalAssemblyInfoFile);
+            GitVersion(_ => _
                 .SetFramework("netcoreapp2.1")
                 .SetArgumentConfigurator(_ => _
-                    .Add("/updateassemblyinfo {value}", SourceDirectory / "GlobalAssemblyInfo.cs")
+                    .Add("/updateassemblyinfo {value}", GlobalAssemblyInfoFile)
                 )
             );
+
+            Info("Patch " + InstallerVersionsFile);
+            WriteAllLines(InstallerVersionsFile,
+                new[]
+                {
+                    $"!define VERSIONMAJOR {GitVersion.Major}",
+                    $"!define VERSIONMINOR {GitVersion.Minor}",
+                    $"!define VERSIONPATCH {GitVersion.Patch}"
+                });
         });
 
     Target Compile => _ => _
@@ -89,5 +114,15 @@ class Build : NukeBuild
                 OutputDirectory,
                 ArtifactFile,
                 info => extensions.Any(extension => info.Name.EndsWith(extension)));
+        });
+
+    Target BuildInstaller => _ => _
+        .DependsOn(Clean, Compile)
+        .Executes(() =>
+        {
+            MakeNsis(
+                arguments: $"/V4 {InstallerFile}",
+                workingDirectory: InstallerFile.Parent,
+                logOutput: true);
         });
 }

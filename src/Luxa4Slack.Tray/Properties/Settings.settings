@@ -17,7 +17,7 @@
     <Setting Name="ShowUnreadMentions" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="Brighness" Type="System.Double" Scope="User">
+    <Setting Name="Brightness" Type="System.Double" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
   </Settings>

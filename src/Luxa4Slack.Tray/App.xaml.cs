@@ -68,7 +68,7 @@
           Settings.Default.ShowUnreadMentions,
           Settings.Default.ShowUnreadMessages,
           Settings.Default.ShowStatus,
-          () => NotificationClientFactory.Create(Settings.Default.Brighness, Debugger.IsAttached));
+          () => NotificationClientFactory.Create(Settings.Default.Brightness, Debugger.IsAttached));
         try
         {
           await this.luxa4Slack.Initialize();

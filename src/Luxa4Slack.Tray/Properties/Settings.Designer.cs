@@ -9,20 +9,20 @@
 //------------------------------------------------------------------------------
 
 namespace CG.Luxa4Slack.Tray.Properties {
-    
-    
+
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.4.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
-        
+
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-        
+
         public static Settings Default {
             get {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public global::System.Collections.Specialized.StringCollection Tokens {
@@ -33,7 +33,7 @@ namespace CG.Luxa4Slack.Tray.Properties {
                 this["Tokens"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -45,7 +45,7 @@ namespace CG.Luxa4Slack.Tray.Properties {
                 this["ShouldUpgrade"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
@@ -57,7 +57,7 @@ namespace CG.Luxa4Slack.Tray.Properties {
                 this["ShowStatus"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -69,7 +69,7 @@ namespace CG.Luxa4Slack.Tray.Properties {
                 this["ShowUnreadMessages"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -81,16 +81,16 @@ namespace CG.Luxa4Slack.Tray.Properties {
                 this["ShowUnreadMentions"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
-        public double Brighness {
+        public double Brightness {
             get {
-                return ((double)(this["Brighness"]));
+                return ((double)(this["Brightness"]));
             }
             set {
-                this["Brighness"] = value;
+                this["Brightness"] = value;
             }
         }
     }

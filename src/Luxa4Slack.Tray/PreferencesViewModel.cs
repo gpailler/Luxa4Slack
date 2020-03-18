@@ -35,7 +35,7 @@
 
       this.notificationClient = NotificationClientFactory.Create(1, Debugger.IsAttached);
       this.notificationClient.Initialize();
-      this.BrightnessPercent = Properties.Settings.Default.Brighness;
+      this.BrightnessPercent = Properties.Settings.Default.Brightness;
 
       if (Properties.Settings.Default.Tokens != null)
       {
@@ -116,7 +116,7 @@
       Properties.Settings.Default.ShowUnreadMentions = this.ShowUnreadMentions;
       Properties.Settings.Default.ShowUnreadMessages = this.ShowUnreadMessages;
       Properties.Settings.Default.ShowStatus = this.ShowStatus;
-      Properties.Settings.Default.Brighness = this.BrightnessPercent;
+      Properties.Settings.Default.Brightness = this.BrightnessPercent;
       Properties.Settings.Default.Save();
 
       this.preferencesUpdated?.Invoke();

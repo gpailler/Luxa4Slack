@@ -8,14 +8,14 @@
   using System.Threading;
   using System.Threading.Tasks;
   using System.Windows.Input;
-
+  using CG.Luxa4Slack.NotificationClient;
   using GalaSoft.MvvmLight;
   using GalaSoft.MvvmLight.CommandWpf;
 
   public class PreferencesViewModel : ViewModelBase
   {
     private readonly Action preferencesUpdated;
-    private readonly LuxaforClient luxaforClient;
+    private readonly INotificationClient notificationClient;
     private int brightness;
     private string newToken;
     private CancellationTokenSource cancellationTokenSource;
@@ -33,8 +33,8 @@
       this.ShowUnreadMessages = Properties.Settings.Default.ShowUnreadMessages;
       this.ShowStatus = Properties.Settings.Default.ShowStatus;
 
-      this.luxaforClient = new LuxaforClient();
-      this.luxaforClient.Initialize();
+      this.notificationClient = NotificationClientFactory.Create(1, Debugger.IsAttached);
+      this.notificationClient.Initialize();
       this.BrightnessPercent = Properties.Settings.Default.Brighness;
 
       if (Properties.Settings.Default.Tokens != null)
@@ -103,8 +103,8 @@
 
       Task.Run(async () =>
       {
-        this.luxaforClient.SetBrightness(brightnessPercent);
-        await this.luxaforClient.SetAsync(LuxaforClient.Colors.White, 100);
+        this.notificationClient.SetBrightness(brightnessPercent);
+        await this.notificationClient.SetAsync(Colors.White, 100);
       }, cancellationTokenSource.Token);
     }
 

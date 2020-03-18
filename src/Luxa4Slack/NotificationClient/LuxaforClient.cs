@@ -1,32 +1,18 @@
-﻿namespace CG.Luxa4Slack
+﻿namespace CG.Luxa4Slack.NotificationClient
 {
   using System;
   using System.Collections.Generic;
   using System.Linq;
-  using System.Threading;
   using System.Threading.Tasks;
   using LuxaforSharp;
 
   using NLog;
 
-  public class LuxaforClient : IDisposable
+  public class LuxaforClient : INotificationClient, IDisposable
   {
     private const int Timeout = 200;
 
     private readonly ILogger logger = LogManager.GetLogger("Luxafor");
-
-    public enum Colors
-    {
-      None,
-      White,
-      Red,
-      Green,
-      Yellow,
-      Blue,
-      Cyan,
-      Orange
-    }
-
     private readonly Dictionary<Colors, Color> colorsMapping = new Dictionary<Colors, Color>
                                                         {
                                                           { Colors.None, new Color(0, 0, 0) },
@@ -42,7 +28,7 @@
     private IDevice device;
     private double brightness;
 
-    public LuxaforClient(double brightness = 1)
+    public LuxaforClient(double brightness)
     {
       this.SetBrightness(brightness);
     }
@@ -69,8 +55,13 @@
       this.brightness = Math.Max(0, Math.Min(1, brightness));
     }
 
-    public async Task<bool> SetAsync(Colors color, int timeout = Timeout)
+    public async Task<bool> SetAsync(Colors color, int? timeout = null)
     {
+      if (!timeout.HasValue)
+      {
+        timeout = Timeout;
+      }
+
       if (this.device == null)
       {
         throw new InvalidOperationException("Not initialized");
@@ -84,7 +75,7 @@
           (byte) (this.colorsMapping[color].Green * this.brightness),
           (byte) (this.colorsMapping[color].Blue * this.brightness));
 
-        return await this.device.AllLeds.SetColor(luxaforFinalColor, timeout: timeout);
+        return await this.device.AllLeds.SetColor(luxaforFinalColor, timeout: timeout.Value);
       }
     }
 

@@ -1,7 +1,9 @@
 ﻿namespace CG.Luxa4Slack.Console
 {
   using System;
+  using System.Diagnostics;
   using System.Threading.Tasks;
+  using CG.Luxa4Slack.NotificationClient;
   using CommandLine;
 
   using NLog;
@@ -29,12 +31,12 @@
             commandLineOptions.ShowUnreadMentions,
             commandLineOptions.ShowUnreadMessages,
             commandLineOptions.ShowStatus,
-            commandLineOptions.Brightness);
+            () => NotificationClientFactory.Create(commandLineOptions.Brightness, commandLineOptions.Debug || Debugger.IsAttached));
 
           try
           {
             await luxa4Slack.Initialize();
-            luxa4Slack.LuxaforFailure += OnLuxaforFailure;
+            luxa4Slack.NotificationClientFailure += OnNotificationClientFailure;
 
             Console.ReadLine();
           }
@@ -73,7 +75,7 @@
       return options;
     }
 
-    private static void OnLuxaforFailure()
+    private static void OnNotificationClientFailure()
     {
       logger.Error("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
     }

@@ -5,6 +5,7 @@
   using System.Linq;
   using System.Threading;
   using System.Threading.Tasks;
+  using CG.Luxa4Slack.NotificationClient;
 
   public class Luxa4Slack
   {
@@ -14,15 +15,14 @@
     private readonly bool showUnreadMentions;
     private readonly bool showUnreadMessages;
     private readonly bool showStatus;
-    private readonly double brightness;
+    private readonly INotificationClient notificationClient;
 
-    private LuxaforClient luxaforClient;
     private List<SlackNotificationAgent> slackAgents;
     private CancellationTokenSource cancellationTokenSource;
     private Task updateTask;
     private int previousWeight;
 
-    public Luxa4Slack(IEnumerable<string> slackTokens, bool showUnreadMentions, bool showUnreadMessages, bool showStatus, double brightness)
+    public Luxa4Slack(IEnumerable<string> slackTokens, bool showUnreadMentions, bool showUnreadMessages, bool showStatus, Func<INotificationClient> notificationClientFactory)
     {
       this.slackTokens = slackTokens ?? throw new ArgumentNullException(nameof(slackTokens));
       if (!this.slackTokens.Any())
@@ -33,16 +33,16 @@
       this.showUnreadMentions = showUnreadMentions;
       this.showUnreadMessages = showUnreadMessages;
       this.showStatus = showStatus;
-      this.brightness = brightness;
+      this.notificationClient = notificationClientFactory();
       this.slackAgents = new List<SlackNotificationAgent>();
     }
 
-    public event Action LuxaforFailure;
+    public event Action NotificationClientFailure;
 
     public async Task Initialize()
     {
-      this.luxaforClient = await this.InitializeLuxaforClient();
-      await this.luxaforClient.StartWaveProcessingAsync();
+      await this.InitializeNotificationClient();
+      await this.notificationClient.StartWaveProcessingAsync();
 
       foreach (var slackToken in this.slackTokens)
       {
@@ -56,25 +56,20 @@
 
     public void Dispose()
     {
-      this.LuxaforFailure = null;
+      this.NotificationClientFailure = null;
 
       this.slackAgents?.ForEach(x => x.Dispose());
-      this.luxaforClient?.Dispose();
+      (this.notificationClient as IDisposable)?.Dispose();
     }
 
-    private async Task<LuxaforClient> InitializeLuxaforClient()
+    private async Task InitializeNotificationClient()
     {
-      var client = new LuxaforClient(this.brightness);
-      if (client.Initialize() == false)
+      if (this.notificationClient.Initialize() == false)
       {
-        throw new Exception("Luxafor device initialization failed");
+        throw new Exception($"Luxafor device initialization failed");
       }
 
-      if (await client.TestAsync())
-      {
-        return client;
-      }
-      else
+      if (!await this.notificationClient.TestAsync())
       {
         throw new Exception("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
       }
@@ -115,7 +110,7 @@
 
       this.updateTask = Task
           .Delay(delay, token)
-          .ContinueWith(this.UpdateLuxaforAsync, token);
+          .ContinueWith(this.UpdateNotificationClientAsync, token);
     }
 
     private int GetWeight()
@@ -127,33 +122,33 @@
       return weight;
     }
 
-    private async Task UpdateLuxaforAsync(Task task)
+    private async Task UpdateNotificationClientAsync(Task task)
     {
       bool result;
       if (this.showUnreadMentions && this.slackAgents.Any(x => x.HasUnreadMentions))
       {
-        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Orange);
+        result = await this.notificationClient.SetAsync(Colors.Orange);
       }
       else if (this.showUnreadMessages && this.slackAgents.Any(x => x.HasUnreadMessages))
       {
-        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Blue);
+        result = await this.notificationClient.SetAsync(Colors.Blue);
       }
       else if (this.showStatus && this.slackAgents.Any(x => x.IsAway))
       {
-        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Red);
+        result = await this.notificationClient.SetAsync(Colors.Red);
       }
       else if (this.showStatus && this.slackAgents.Any(x => x.IsAway == false))
       {
-        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Green);
+        result = await this.notificationClient.SetAsync(Colors.Green);
       }
       else
       {
-        result = await this.luxaforClient.ResetAsync();
+        result = await this.notificationClient.ResetAsync();
       }
 
       if (result == false)
       {
-        this.LuxaforFailure?.Invoke();
+        this.NotificationClientFailure?.Invoke();
       }
     }
   }

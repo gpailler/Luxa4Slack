@@ -1,10 +1,11 @@
 ﻿namespace CG.Luxa4Slack.Tray
 {
   using System;
+  using System.Diagnostics;
   using System.Linq;
   using System.Threading.Tasks;
   using System.Windows;
-
+  using CG.Luxa4Slack.NotificationClient;
   using CG.Luxa4Slack.Tray.Properties;
 
   using Hardcodet.Wpf.TaskbarNotification;
@@ -67,11 +68,11 @@
           Settings.Default.ShowUnreadMentions,
           Settings.Default.ShowUnreadMessages,
           Settings.Default.ShowStatus,
-          Settings.Default.Brighness);
+          () => NotificationClientFactory.Create(Settings.Default.Brighness, Debugger.IsAttached));
         try
         {
           await this.luxa4Slack.Initialize();
-          this.luxa4Slack.LuxaforFailure += this.OnLuxaforFailure;
+          this.luxa4Slack.NotificationClientFailure += this.OnNotificationClientFailure;
         }
         catch (Exception ex)
         {
@@ -81,7 +82,7 @@
       }
     }
 
-    private void OnLuxaforFailure()
+    private void OnNotificationClientFailure()
     {
       this.viewModel.ShowError("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
     }

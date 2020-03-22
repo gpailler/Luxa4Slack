@@ -1,4 +1,6 @@
 !include "FileFunc.nsh"
+!include WinVer.nsh
+!addplugindir /x86-unicode ".\Plugins\LockedList"
 
 ;--------------------------------
 ;General
@@ -8,14 +10,18 @@
   !define COMPANYNAME "Gregoire Pailler"
   !include Versions.nsh
   !define HELPURL "https://github.com/gpailler/Luxa4Slack"
-  !define UNINST_REGISTRY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
+  !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}"
 
   ; Used on finish page and Start Menu
   !define LAUNCH_FINISH_APPNAME "Luxa4Slack.Tray"
-  !define LAUNCH_FINISH_APPFILE "Luxa4Slack.Tray.exe"
 
   !define ROOT "..\.."
-  !define BINARIES "${ROOT}\bin\Release"
+  !ifndef CONFIGURATION
+    !define CONFIGURATION "Release"
+  !endif
+  !define BINARIES "${ROOT}\bin\${CONFIGURATION}"
+  !define APPFILE_TRAY "Luxa4Slack.Tray.exe"
+  !define APPFILE_CONSOLE "Luxa4Slack.Console.exe"
 
   ; Resources
   !define LOGO "graphics\logo.ico"
@@ -25,6 +31,7 @@
   Unicode True
   RequestExecutionLevel user
   ManifestDPIAware true
+  SetCompressor /SOLID lzma
 
   ; Global options
   Name "${APPNAME}"
@@ -32,15 +39,37 @@
   OutFile "${ROOT}\artifacts\Luxa4Slack.Installer-${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONPATCH}.exe"
   InstallDir "$LOCALAPPDATA\Programs\${APPNAME}"
 
-  ;Get installation folder from registry if available
-  InstallDirRegKey HKCU "${UNINST_REGISTRY}" "InstallLocation"
-
-  SetCompressor lzma
+  ; Retrieve previous installation folder from registry if available
+  InstallDirRegKey HKCU "${UNINST_KEY}" "InstallLocation"
 ;--------------------------------
 
 
 ;--------------------------------
-; Modern UI
+; Init
+Function .onInit
+  ; Check Windows version
+  ${IfNot} ${AtLeastWin8}
+    MessageBox MB_OK|MB_ICONSTOP "Windows 8 or later is required in order to run ${APPNAME}."
+    Quit
+  ${EndIf}
+
+  ; Check .Net Framework 4.5.2
+  ; Magic numbers: http://msdn.microsoft.com/en-us/library/ee942965.aspx
+  ClearErrors
+  ReadRegDWORD $0 HKLM "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" "Release"
+  IfErrors NotDetected
+
+  ${If} $0 < 379893
+    NotDetected:
+    MessageBox MB_OK|MB_ICONSTOP "Microsoft .NET Framework 4.5.2 or later is required in order to run ${APPNAME}."
+    Quit
+  ${EndIf}
+FunctionEnd
+;--------------------------------
+
+
+;--------------------------------
+; Modern UI configuration
 
   ; Use Modern UI interface
   ; https://nsis.sourceforge.io/Docs/Modern%20UI/Readme.html
@@ -58,16 +87,17 @@
   !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis3-grey.bmp"
 
   ; Checkbox to launch the app on exit
-  !define MUI_FINISHPAGE_RUN "$INSTDIR\${LAUNCH_FINISH_APPFILE}"
+  !define MUI_FINISHPAGE_RUN "$INSTDIR\${APPFILE_TRAY}"
   !define MUI_FINISHPAGE_RUN_TEXT "Launch ${LAUNCH_FINISH_APPNAME}"
 
-  ; Do not jump to finish page automatically
-  ;!define MUI_FINISHPAGE_NOAUTOCLOSE
+  ; Do not jump to finish page automatically (debug)
+  ; !define MUI_FINISHPAGE_NOAUTOCLOSE
 
   ; Define MUI pages
   !insertmacro MUI_PAGE_WELCOME
   !insertmacro MUI_PAGE_LICENSE "${ROOT}\LICENSE"
   !insertmacro MUI_PAGE_DIRECTORY
+  Page Custom LockedListShow
   !insertmacro MUI_PAGE_INSTFILES
   !insertmacro MUI_PAGE_FINISH
 
@@ -80,16 +110,21 @@
   !insertmacro MUI_LANGUAGE "English"
 ;--------------------------------
 
+
 ;--------------------------------
 ;Installer Sections
 
 Section -UninstallPrevious
   ; Search previous version in registry
-  ReadRegStr $R0 HKCU "${UNINST_REGISTRY}" "QuietUninstallString"
-
+  ReadRegStr $R0 HKCU "${UNINST_KEY}" "UninstallString"
   ${If} $R0 != ""
-    DetailPrint "Removing previous installation."
-    ExecWait "$R0"
+    DetailPrint "Previous installation detected. Calling uninstaller..."
+    ReadRegStr $R1 HKCU "${UNINST_KEY}" "InstallLocation"
+    ${If} $R1 != ""
+      ; Copy uninstaller in a temp directory, execute it and wait the completion
+      CopyFiles /SILENT /FILESONLY "$R0" "$PLUGINSDIR\${APPNAME}-uninstaller.exe"
+      ExecWait "$PLUGINSDIR\${APPNAME}-uninstaller.exe _?=$R1 /S"
+    ${EndIf}
   ${EndIf}
 SectionEnd
 
@@ -108,26 +143,25 @@ Section "install"
 
   ; Start Menu
   CreateDirectory "$SMPROGRAMS\${APPNAME}"
-  CreateShortCut "$SMPROGRAMS\${APPNAME}\${LAUNCH_FINISH_APPNAME}.lnk" "$INSTDIR\${LAUNCH_FINISH_APPFILE}" "" "$INSTDIR\logo.ico"
+  CreateShortCut "$SMPROGRAMS\${APPNAME}\${LAUNCH_FINISH_APPNAME}.lnk" "$INSTDIR\${APPFILE_TRAY}" "" "$INSTDIR\logo.ico"
 
   ; Registry information for add/remove programs
-  WriteRegStr HKCU "${UNINST_REGISTRY}" "DisplayName" "${APPNAME}"
-  WriteRegStr HKCU "${UNINST_REGISTRY}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-  WriteRegStr HKCU "${UNINST_REGISTRY}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
-  WriteRegStr HKCU "${UNINST_REGISTRY}" "InstallLocation" "$\"$INSTDIR$\""
-  WriteRegStr HKCU "${UNINST_REGISTRY}" "DisplayIcon" "$\"$INSTDIR\logo.ico$\""
-  WriteRegStr HKCU "${UNINST_REGISTRY}" "Publisher" "${COMPANYNAME}"
-  WriteRegStr HKCU "${UNINST_REGISTRY}" "HelpLink" "$\"${HELPURL}$\""
-  WriteRegStr HKCU "${UNINST_REGISTRY}" "DisplayVersion" "${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONPATCH}"
-  WriteRegDWORD HKCU "${UNINST_REGISTRY}" "VersionMajor" ${VERSIONMAJOR}
-  WriteRegDWORD HKCU "${UNINST_REGISTRY}" "VersionMinor" ${VERSIONMINOR}
-  WriteRegDWORD HKCU "${UNINST_REGISTRY}" "NoModify" 1
-  WriteRegDWORD HKCU "${UNINST_REGISTRY}" "NoRepair" 1
+  WriteRegStr HKCU "${UNINST_KEY}" "DisplayName" "${APPNAME}"
+  WriteRegStr HKCU "${UNINST_KEY}" "UninstallString" "$INSTDIR\uninstall.exe"
+  WriteRegStr HKCU "${UNINST_KEY}" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKCU "${UNINST_KEY}" "DisplayIcon" "$INSTDIR\logo.ico"
+  WriteRegStr HKCU "${UNINST_KEY}" "Publisher" "${COMPANYNAME}"
+  WriteRegStr HKCU "${UNINST_KEY}" "HelpLink" "${HELPURL}"
+  WriteRegStr HKCU "${UNINST_KEY}" "DisplayVersion" "${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONPATCH}"
+  WriteRegDWORD HKCU "${UNINST_KEY}" "VersionMajor" ${VERSIONMAJOR}
+  WriteRegDWORD HKCU "${UNINST_KEY}" "VersionMinor" ${VERSIONMINOR}
+  WriteRegDWORD HKCU "${UNINST_KEY}" "NoModify" 1
+  WriteRegDWORD HKCU "${UNINST_KEY}" "NoRepair" 1
 
   ; Set the estimated size based on INSTDIR size
   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
   IntFmt $0 "0x%08X" $0
-  WriteRegDWORD HKCU "${UNINST_REGISTRY}" "EstimatedSize" "$0"
+  WriteRegDWORD HKCU "${UNINST_KEY}" "EstimatedSize" "$0"
 SectionEnd
 
 
@@ -138,9 +172,22 @@ Section "uninstall"
   ; Remove Start Menu folder if empty
   RmDir "$SMPROGRAMS\${APPNAME}"
 
+  ; Kill running processes
+  LockedList::CloseProcess /kill "$INSTDIR\${APPFILE_TRAY}"
+  LockedList::CloseProcess /kill "$INSTDIR\${APPFILE_CONSOLE}"
+
   ; Remove files
   RmDir /r $INSTDIR
 
   ; Remove uninstaller information from the registry
-  DeleteRegKey HKCU "${UNINST_REGISTRY}"
-sectionEnd
+  DeleteRegKey HKCU "${UNINST_KEY}"
+SectionEnd
+
+
+Function LockedListShow
+  !insertmacro MUI_HEADER_TEXT "Running applications" "Close running applications to continue."
+  LockedList::AddModule "$INSTDIR\${APPFILE_TRAY}"
+  LockedList::AddModule "$INSTDIR\${APPFILE_CONSOLE}"
+  LockedList::Dialog /autonext /autoclosesilent "" "Close All"
+  Pop $R0
+FunctionEnd

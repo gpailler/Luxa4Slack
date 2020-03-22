@@ -121,7 +121,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             MakeNsis(
-                arguments: $"/V4 {InstallerFile}",
+                arguments: $"/V4 /DCONFIGURATION={Configuration} {InstallerFile}",
                 workingDirectory: InstallerFile.Parent,
                 logOutput: true);
         });

@@ -61,7 +61,15 @@
 
     public void Dispose()
     {
-      this.device?.Dispose();
+      if (this.device != null)
+      {
+        Task.Factory
+          .StartNew(async () => await this.ResetAsync())
+          .Unwrap()
+          .GetAwaiter()
+          .GetResult();
+        this.device.Dispose();
+      }
     }
 
     public void SetBrightness(double brightness)

@@ -13,8 +13,8 @@
   {
     protected delegate void GetHistoryHandler(Action<MessageHistory> callback, Channel groupInfo, DateTime? latest, DateTime? oldest, int? count, bool? unreads);
 
-    protected ChannelHandlerBase(SlackSocketClient client, ChannelsInfo channelsInfo, HashSet<string> highlightWords, ReadableNameResolver readableNameResolver, ILogger logger)
-      : base(client, channelsInfo, highlightWords, readableNameResolver, logger)
+    protected ChannelHandlerBase(SlackSocketClient client, HandlerContext context, ILogger logger)
+      : base(client, context, logger)
     {
       this.Client.BindCallback<TMessage>(this.OnChannelMarked);
 
@@ -40,12 +40,12 @@
 
     private void OnChannelMarked(TMessage message)
     {
-      this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.ReadableNameResolver.Resolve(message.channel)} - Raw: {this.GetRawMessage(message)}");
+      this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.Context.GetNameFromId(message.channel)} - Raw: {this.GetRawMessage(message)}");
 
       if (this.ShouldMonitor(message.channel))
       {
         var channel = this.FindChannel(message);
-        var channelNotification = this.ChannelsInfo[channel.id];
+        var channelNotification = this.Context.ChannelsInfo[channel.id];
 
         this.HistoryMethod(
           x =>
@@ -66,7 +66,7 @@
 
     private void UpdateChannelInfo(Channel channel)
     {
-      this.Logger.Debug($"Init {(channel.is_channel ? "channel" : "group")} {this.ReadableNameResolver.Resolve(channel.id)}");
+      this.Logger.Debug($"Init {(channel.is_channel ? "channel" : "group")} {this.Context.GetNameFromId(channel.id)}");
 
       int unreadCount = 0;
       using (ManualResetEventSlim waiter = new ManualResetEventSlim())
@@ -89,7 +89,7 @@
             x =>
             {
               var messages = x.messages.Where(y => this.FilterMessageByDate(y, channel.last_read) && this.IsRegularMessage(y));
-              this.ChannelsInfo[channel.id].Update(
+              this.Context.ChannelsInfo[channel.id].Update(
                 messages.Any(),
                 messages.Any(y => this.HasMention(this.GetRawMessage(y)))
               );

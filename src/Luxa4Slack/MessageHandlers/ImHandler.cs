@@ -1,6 +1,5 @@
 ﻿namespace CG.Luxa4Slack.MessageHandlers
 {
-  using System.Collections.Generic;
   using System.Linq;
   using System.Threading;
   using NLog;
@@ -8,8 +7,8 @@
 
   internal class ImHandler : MessageHandlerBase
   {
-    public ImHandler(SlackSocketClient client, ChannelsInfo channelsInfo, HashSet<string> highlightWords, ReadableNameResolver readableNameResolver)
-      : base(client, channelsInfo, highlightWords, readableNameResolver, LogManager.GetLogger(nameof(ImHandler)))
+    public ImHandler(SlackSocketClient client, HandlerContext context)
+      : base(client, context, LogManager.GetLogger(nameof(ImHandler)))
     {
       this.Client.BindCallback<ImMarked>(this.OnImMarked);
 
@@ -30,12 +29,12 @@
 
     private void OnImMarked(ImMarked message)
     {
-      this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.ReadableNameResolver.Resolve(message.channel)} - Raw: {this.GetRawMessage(message)}");
+      this.Logger.Debug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {this.Context.GetNameFromId(message.channel)} - Raw: {this.GetRawMessage(message)}");
 
       if (this.ShouldMonitor(message.channel))
       {
         var directMessageConversation = this.Client.DirectMessageLookup[message.channel];
-        var channelNotification = this.ChannelsInfo[directMessageConversation.id];
+        var channelNotification = this.Context.ChannelsInfo[directMessageConversation.id];
 
         this.Client.GetDirectMessageHistory(
           x =>
@@ -54,7 +53,7 @@
 
     private void UpdateChannelInfo(DirectMessageConversation im)
     {
-      this.Logger.Debug($"Init IM {this.ReadableNameResolver.Resolve(im.id)}");
+      this.Logger.Debug($"Init IM {this.Context.GetNameFromId(im.id)}");
 
       int unreadCount = 0;
       using (ManualResetEventSlim waiter = new ManualResetEventSlim())
@@ -77,7 +76,7 @@
             x =>
             {
               var hasMessage = x.messages.Any(y => this.FilterMessageByDate(y, im.last_read) && this.IsRegularMessage(y));
-              this.ChannelsInfo[im.id].Update(hasMessage, hasMessage);
+              this.Context.ChannelsInfo[im.id].Update(hasMessage, hasMessage);
               waiter.Set();
             },
             im, null, null, unreadCount);

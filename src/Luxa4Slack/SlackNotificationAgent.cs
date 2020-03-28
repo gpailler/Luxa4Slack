@@ -67,13 +67,11 @@
 
         this.readableNameResolver = new ReadableNameResolver(this.Client);
 
-        var highlightWords = this.GetHighlightWords();
-        this.Logger.Debug("Highlight words for mention detection: {0}", string.Join(", ", highlightWords));
-
         messageHandlers.Clear();
-        messageHandlers.Add(new ChannelHandler(this.Client, this.channelsInfo, highlightWords, this.readableNameResolver));
-        messageHandlers.Add(new GroupHandler(this.Client, this.channelsInfo, highlightWords, this.readableNameResolver));
-        messageHandlers.Add(new ImHandler(this.Client, this.channelsInfo, highlightWords, this.readableNameResolver));
+        var context = new HandlerContext(this.Client, this.channelsInfo, this.readableNameResolver);
+        messageHandlers.Add(new ChannelHandler(this.Client, context));
+        messageHandlers.Add(new GroupHandler(this.Client, context));
+        messageHandlers.Add(new ImHandler(this.Client, context));
         messageHandlers.Add(new PresenceHandler(this.Client, this.OnPresenceChanged));
         this.channelsInfo.Changed += this.UpdateStatus;
         this.UpdateStatus();
@@ -147,21 +145,6 @@
           connectionSocketEvent.Set();
         }
       }
-    }
-
-    private HashSet<string> GetHighlightWords()
-    {
-      // Add some keywords for mention detection
-      var highlightWords = new HashSet<string>();
-      highlightWords.Add("<!channel>");
-      highlightWords.Add(this.Client.MySelf.id);
-      highlightWords.Add(this.Client.MySelf.name);
-      this.Client.MySelf.prefs.highlight_words
-        .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-        .Select(x => x.Trim())
-        .ForEach(x => highlightWords.Add(x));
-
-      return highlightWords;
     }
 
     private void OnPresenceChanged(bool isActive)

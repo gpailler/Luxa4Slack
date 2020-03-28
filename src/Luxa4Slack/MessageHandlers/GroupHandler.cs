@@ -7,8 +7,8 @@
 
   internal class GroupHandler : ChannelHandlerBase<GroupMarked>
   {
-    public GroupHandler(SlackSocketClient client, ChannelsInfo channelsInfo, HashSet<string> highlightWords, ReadableNameResolver readableNameResolver)
-      : base(client, channelsInfo, highlightWords, readableNameResolver, LogManager.GetLogger(nameof(GroupHandler)))
+    public GroupHandler(SlackSocketClient client, HandlerContext context)
+      : base(client, context, LogManager.GetLogger(nameof(GroupHandler)))
     {
     }
 

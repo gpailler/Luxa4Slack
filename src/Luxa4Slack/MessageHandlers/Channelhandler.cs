@@ -8,8 +8,8 @@
 
   internal class ChannelHandler : ChannelHandlerBase<ChannelMarked>
   {
-    public ChannelHandler(SlackSocketClient client, ChannelsInfo channelsInfo, HashSet<string> highlightWords, ReadableNameResolver readableNameResolver)
-      : base(client, channelsInfo, highlightWords, readableNameResolver, LogManager.GetLogger(nameof(ChannelHandler)))
+    public ChannelHandler(SlackSocketClient client, HandlerContext context)
+      : base(client, context, LogManager.GetLogger(nameof(ChannelHandler)))
     {
     }
 

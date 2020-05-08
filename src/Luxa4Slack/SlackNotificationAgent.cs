@@ -12,7 +12,7 @@
 
   internal class SlackNotificationAgent : IDisposable
   {
-    internal const int Timeout = 15000;
+    internal const int Timeout = 60000;
 
     protected readonly ILogger Logger = LogManager.GetLogger(nameof(SlackNotificationAgent));
     protected SlackSocketClient Client;

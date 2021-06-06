@@ -23,7 +23,7 @@
       return this.Client.ChannelLookup[message.channel];
     }
 
-    protected override GetHistoryHandler HistoryMethod => this.Client.GetChannelHistory;
+    protected override GetHistoryHandler HistoryMethod => this.Client.GetConversationsHistory;
 
     protected override bool ShouldMonitor(string id)
     {

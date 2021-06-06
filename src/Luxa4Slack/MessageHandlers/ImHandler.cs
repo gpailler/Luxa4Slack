@@ -1,5 +1,6 @@
 ﻿namespace CG.Luxa4Slack.MessageHandlers
 {
+  using System.Collections.Generic;
   using System.Linq;
   using System.Threading;
   using NLog;
@@ -13,11 +14,35 @@
       this.Client.BindCallback<ImMarked>(this.OnImMarked);
 
       this.Logger.Debug("Fetch initial messages");
-      foreach (var channel in this.Client.DirectMessages.Where(x => this.ShouldMonitor(x.id)))
 
+      var allChannels = new List<Channel>();
+      string cursor = null;
+      do
       {
-        this.UpdateChannelInfo(channel);
-      }
+        using (ManualResetEventSlim waiter = new ManualResetEventSlim())
+        {
+          this.Client.GetConversationsList(response =>
+            {
+              foreach (var channel in response.channels)
+              {
+                if (channel.is_im && this.Client.UserLookup.ContainsKey(channel.user))
+                {
+                  allChannels.Add(channel);
+                }
+              }
+
+              cursor = response.response_metadata.next_cursor;
+              waiter.Set();
+            },
+            cursor,
+            limit: 500,
+            types: new[] { "mpim", "im" });
+
+          waiter.Wait();
+        }
+      } while (!string.IsNullOrEmpty(cursor));
+
+      this.RunParallel(allChannels, this.UpdateChannelInfo);
     }
 
     public override void Dispose()
@@ -33,10 +58,10 @@
 
       if (this.ShouldMonitor(message.channel))
       {
-        var directMessageConversation = this.Client.DirectMessageLookup[message.channel];
+        var directMessageConversation = new Channel() { id = message.channel };
         var channelNotification = this.Context.ChannelsInfo[directMessageConversation.id];
 
-        this.Client.GetDirectMessageHistory(
+        this.Client.GetConversationsHistory(
           x =>
           {
             var messages = x.messages.Where(y => this.FilterMessageByDate(y, message.ts));
@@ -51,20 +76,20 @@
       }
     }
 
-    private void UpdateChannelInfo(DirectMessageConversation im)
+    private void UpdateChannelInfo(Channel channel)
     {
-      this.Logger.Debug($"Init IM {this.Context.GetNameFromId(im.id)}");
+      this.Logger.Debug($"Init IM {this.Context.GetNameFromId(channel.id)}");
 
       int unreadCount = 0;
       using (ManualResetEventSlim waiter = new ManualResetEventSlim())
       {
-        this.Client.GetDirectMessageHistory(
+        this.Client.GetConversationsHistory(
           x =>
           {
             unreadCount = x.unread_count_display;
             waiter.Set();
           },
-          im, null, null, 1, true);
+          channel, null, null, 1, true);
         waiter.Wait(SlackNotificationAgent.Timeout);
       }
 
@@ -72,14 +97,14 @@
       {
         using (ManualResetEventSlim waiter = new ManualResetEventSlim())
         {
-          this.Client.GetDirectMessageHistory(
+          this.Client.GetConversationsHistory(
             x =>
             {
-              var hasMessage = x.messages.Any(y => this.FilterMessageByDate(y, im.last_read) && this.IsRegularMessage(y));
-              this.Context.ChannelsInfo[im.id].Update(hasMessage, hasMessage);
+              var hasMessage = x.messages.Any(y => this.FilterMessageByDate(y, channel.last_read) && this.IsRegularMessage(y));
+              this.Context.ChannelsInfo[channel.id].Update(hasMessage, hasMessage);
               waiter.Set();
             },
-            im, null, null, unreadCount);
+            channel, null, null, unreadCount);
           waiter.Wait(SlackNotificationAgent.Timeout);
         }
       }

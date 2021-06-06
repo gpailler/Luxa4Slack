@@ -22,7 +22,7 @@
       return this.Client.GroupLookup[message.channel];
     }
 
-    protected override GetHistoryHandler HistoryMethod => this.Client.GetGroupHistory;
+    protected override GetHistoryHandler HistoryMethod => this.Client.GetConversationsHistory;
 
     protected override bool ShouldMonitor(string id)
     {

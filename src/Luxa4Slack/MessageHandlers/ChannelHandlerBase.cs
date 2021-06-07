@@ -19,10 +19,8 @@
       this.Client.BindCallback<TMessage>(this.OnChannelMarked);
 
       this.Logger.Debug("Fetch initial messages");
-      foreach (var channel in this.GetChannels())
-      {
-        this.UpdateChannelInfo(channel);
-      }
+
+      this.RunParallel(this.GetChannels(), this.UpdateChannelInfo);
     }
 
     public override void Dispose()

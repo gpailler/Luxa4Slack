@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack.OAuth.AzureFunct
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{C8AD61D9-1BAA-4B0E-A980-AC7CBF60C29C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlackAPI", "vendor\SlackAPI\SlackAPI\SlackAPI.csproj", "{72DA7C19-43C1-4829-97BA-34D85E83290E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{97C3955F-215E-4E71-942F-7BE2A9749A59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97C3955F-215E-4E71-942F-7BE2A9749A59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97C3955F-215E-4E71-942F-7BE2A9749A59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72DA7C19-43C1-4829-97BA-34D85E83290E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72DA7C19-43C1-4829-97BA-34D85E83290E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72DA7C19-43C1-4829-97BA-34D85E83290E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72DA7C19-43C1-4829-97BA-34D85E83290E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

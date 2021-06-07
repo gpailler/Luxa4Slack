@@ -1,7 +1,9 @@
 ﻿namespace CG.Luxa4Slack.MessageHandlers
 {
   using System;
+  using System.Collections.Generic;
   using System.Linq;
+  using System.Threading.Tasks;
   using NLog;
   using SlackAPI;
   using SlackAPI.WebSocketMessages;
@@ -9,6 +11,8 @@
   internal abstract class MessageHandlerBase : IDisposable
   {
     protected const int HistoryItemsToFetch = 50;
+
+    private const int MaxDegreeOfParallelism = 8;
 
     protected readonly SlackSocketClient Client;
 
@@ -64,6 +68,15 @@
     }
 
     protected abstract bool ShouldMonitor(string id);
+
+    protected void RunParallel<T>(IEnumerable<T> source, Action<T> callback)
+    {
+      Parallel.ForEach(
+        source,
+        new ParallelOptions { MaxDegreeOfParallelism = MaxDegreeOfParallelism },
+        callback
+      );
+    }
 
     private void OnMessageReceived(NewMessage message)
     {

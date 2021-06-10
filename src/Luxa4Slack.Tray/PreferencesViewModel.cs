@@ -10,7 +10,7 @@
   using System.Windows.Input;
 
   using GalaSoft.MvvmLight;
-  using GalaSoft.MvvmLight.CommandWpf;
+  using GalaSoft.MvvmLight.Command;
 
   public class PreferencesViewModel : ViewModelBase
   {
@@ -24,7 +24,7 @@
     {
       this.preferencesUpdated = preferencesUpdated;
       this.UpdatePreferencesCommand = new RelayCommand(this.UpdatePreferences);
-      this.RequestTokenCommand = new RelayCommand(() => Process.Start(OAuthHelper.GetAuthorizationUri().ToString()));
+      this.RequestTokenCommand = new RelayCommand(() => Process.Start(new ProcessStartInfo(OAuthHelper.GetAuthorizationUri().ToString()) { UseShellExecute = true }));
       this.RemoveTokenCommand = new RelayCommand<SlackToken>(x => this.Tokens.Remove(x));
       this.AddTokenCommand = new RelayCommand(() => this.AddToken());
       this.Title = $"{App.AppName} - Preferences";

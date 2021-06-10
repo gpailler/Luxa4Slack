@@ -14,5 +14,5 @@ dotnet_style_require_accessibility_modifiers = always
 csharp_qualified_using_at_nested_scope = true
 csharp_add_imports_to_deepest_scope = true
 
-[*.{csproj,cake}]
+[*.{csproj,cake,props}]
 indent_size = 2

@@ -1,3 +1,6 @@
 [submodule "vendor/SlackAPI"]
 	path = vendor/SlackAPI
 	url = https://github.com/Inumedia/SlackAPI.git
+[submodule "vendor/LuxaforSharp"]
+	path = vendor/LuxaforSharp
+	url = https://github.com/gpailler/LuxaforSharp.git

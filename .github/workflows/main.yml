@@ -2,6 +2,8 @@ name: Luxa4Slack CI
 
 on:
   push:
+    branches:
+      - '**'
     tags:
       - 'v*'
   pull_request:
@@ -18,8 +20,6 @@ jobs:
 
     name: Build and Pack ⚙️📦
     runs-on: windows-latest
-    outputs:
-      semVer: ${{ steps.gitversion.outputs.semVer }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -41,47 +41,41 @@ jobs:
         with:
           dotnet-version: 5.0.x
 
-      - name: Publish ${{ env.PUBLISHED_PROJECT }}
+      - name: Publish
         run: >-
           dotnet publish
           ./src/${{ env.PUBLISHED_PROJECT }}/
           --configuration ${{ env.CONFIGURATION }}
           --runtime ${{ env.PUBLISH_PLATFORM }}
-          --output ./artifacts/bin/${{ env.CONFIGURATION }}/${{ env.PUBLISH_PLATFORM }}
+          --output ./bin/${{ env.CONFIGURATION }}
           --self-contained true
-          -p:Version=${{ needs.build.outputs.AssemblySemVer }}
-          -p:FileVersion=${{ needs.build.outputs.AssemblySemFileVer }}
-          -p:InformationalVersion=${{ needs.build.outputs.InformationalVersion }}
+          -p:Version=${{ steps.gitversion.outputs.AssemblySemVer }}
+          -p:FileVersion=${{ steps.gitversion.outputs.AssemblySemFileVer }}
+          -p:InformationalVersion=${{ steps.gitversion.outputs.InformationalVersion }}
           -p:PublishSingleFile=false
 
-      - name: Pack ${{ env.PUBLISHED_PROJECT }}
-        uses: thedoctor0/zip-release@master
-        with:
-          directory: ./artifacts/bin/${{ env.CONFIGURATION }}/${{ env.PUBLISH_PLATFORM }}
-          filename: '${{ env.PUBLISHED_PROJECT }}-${{ env.PUBLISH_PLATFORM }}-${{ needs.build.outputs.semVer }}.zip'
+      - name: Pack
+        run: 7z a ${{ github.workspace }}/artifacts/${{ env.PUBLISHED_PROJECT }}-${{ env.PUBLISH_PLATFORM }}-${{ steps.gitversion.outputs.semVer }}.zip * -r
+        working-directory: ./bin/${{ env.CONFIGURATION }}
 
       - name: Install NSIS
         run: nuget install NSIS-Tool -Version ${{ env.NSIS_VERSION }}
 
-      - name: Configure Installer versions
-        uses: DamianReeves/write-file-action
-        with:
-          path: ./src/Luxa4Slack.Installer/Versions.nsh
-          contents: |
-            !define VERSIONMAJOR ${{ needs.build.outputs.Major }}
-            !define VERSIONMINOR ${{ needs.build.outputs.Minor }}
-            !define VERSIONPATCH ${{ needs.build.outputs.Patch }}
-          write-mode: overwrite
-
       - name: Build installer
-        run: ./NSIS-Tool.${{ env.NSIS_VERSION }}/tools/makensis.exe /V4 /DCONFIGURATION=${{ env.CONFIGURATION }} ./src/Luxa4Slack.Installer/Luxa4Slack.Installer.nsi
+        run: |
+          $content = "!define VERSIONMAJOR ${{ steps.gitversion.outputs.Major }}`r`n"
+          $content += "!define VERSIONMINOR ${{ steps.gitversion.outputs.Minor }}`r`n"
+          $content += "!define VERSIONPATCH ${{ steps.gitversion.outputs.Patch }}`r`n"
+          $content | Set-Content Versions.nsh -Encoding ASCII
+
+          ${{ github.workspace }}/NSIS-Tool.${{ env.NSIS_VERSION }}/tools/makensis.exe /V4 /DCONFIGURATION=${{ env.CONFIGURATION }} Luxa4Slack.Installer.nsi
         working-directory: ./src/Luxa4Slack.Installer/
 
       - name: Upload zip archive
         uses: actions/upload-artifact@v2
         with:
           name: Zip archive
-          path: ./artifacts/bin/${{ env.CONFIGURATION }}/${{ env.PUBLISH_PLATFORM }}/*.zip
+          path: ./artifacts/*.zip
           if-no-files-found: error
 
       - name: Upload installer

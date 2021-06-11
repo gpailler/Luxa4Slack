@@ -1,0 +1,124 @@
+name: Luxa4Slack CI
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    env:
+      CONFIGURATION: Release
+      PUBLISH_PLATFORM: win-x64
+      PUBLISHED_PROJECT: Luxa4Slack.Tray
+      NSIS_VERSION: 3.0.6.1
+
+    name: Build and Pack ⚙️📦
+    runs-on: windows-latest
+    outputs:
+      semVer: ${{ steps.gitversion.outputs.semVer }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Full history is required by GitVersion
+          submodules: true
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: '5.x'
+
+      - name: Run GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Publish ${{ env.PUBLISHED_PROJECT }}
+        run: >-
+          dotnet publish
+          ./src/${{ env.PUBLISHED_PROJECT }}/
+          --configuration ${{ env.CONFIGURATION }}
+          --runtime ${{ env.PUBLISH_PLATFORM }}
+          --output ./artifacts/bin/${{ env.CONFIGURATION }}/${{ env.PUBLISH_PLATFORM }}
+          --self-contained true
+          -p:Version=${{ needs.build.outputs.AssemblySemVer }}
+          -p:FileVersion=${{ needs.build.outputs.AssemblySemFileVer }}
+          -p:InformationalVersion=${{ needs.build.outputs.InformationalVersion }}
+          -p:PublishSingleFile=false
+
+      - name: Pack ${{ env.PUBLISHED_PROJECT }}
+        uses: thedoctor0/zip-release@master
+        with:
+          directory: ./artifacts/bin/${{ env.CONFIGURATION }}/${{ env.PUBLISH_PLATFORM }}
+          filename: '${{ env.PUBLISHED_PROJECT }}-${{ env.PUBLISH_PLATFORM }}-${{ needs.build.outputs.semVer }}.zip'
+
+      - name: Install NSIS
+        run: nuget install NSIS-Tool -Version ${{ env.NSIS_VERSION }}
+
+      - name: Configure Installer versions
+        uses: DamianReeves/write-file-action
+        with:
+          path: ./src/Luxa4Slack.Installer/Versions.nsh
+          contents: |
+            !define VERSIONMAJOR ${{ needs.build.outputs.Major }}
+            !define VERSIONMINOR ${{ needs.build.outputs.Minor }}
+            !define VERSIONPATCH ${{ needs.build.outputs.Patch }}
+          write-mode: overwrite
+
+      - name: Build installer
+        run: ./NSIS-Tool.${{ env.NSIS_VERSION }}/tools/makensis.exe /V4 /DCONFIGURATION=${{ env.CONFIGURATION }} ./src/Luxa4Slack.Installer/Luxa4Slack.Installer.nsi
+        working-directory: ./src/Luxa4Slack.Installer/
+
+      - name: Upload zip archive
+        uses: actions/upload-artifact@v2
+        with:
+          name: Zip archive
+          path: ./artifacts/bin/${{ env.CONFIGURATION }}/${{ env.PUBLISH_PLATFORM }}/*.zip
+          if-no-files-found: error
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: Installer
+          path: ./artifacts/*.exe
+          if-no-files-found: error
+
+
+  release:
+    name: Release 🚀🌐
+    needs: [ build ]
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Download zip archive
+        uses: actions/download-artifact@v2
+        with:
+          name: Zip archive
+          path: ./artifacts/
+
+      - name: Download installer
+        uses: actions/download-artifact@v2
+        with:
+          name: Installer
+          path: ./artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ./artifacts/*.zip
+            ./artifacts/*.exe
+          draft: true

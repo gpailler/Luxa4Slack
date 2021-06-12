@@ -5,8 +5,9 @@ VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C7A15E77-F1BC-45F4-9391-ECDC2AA7D892}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = src\.editorconfig
-		GlobalAssemblyInfo.cs = src\GlobalAssemblyInfo.cs
+		.editorconfig = .editorconfig
+		appveyor.yml = appveyor.yml
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack", "src\Luxa4Slack\Luxa4Slack.csproj", "{0E48DD4A-74D2-4C38-9B55-FCF0C17CAFD1}"
@@ -20,6 +21,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{C8AD61D9-1BAA-4B0E-A980-AC7CBF60C29C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlackAPI", "vendor\SlackAPI\SlackAPI\SlackAPI.csproj", "{72DA7C19-43C1-4829-97BA-34D85E83290E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LuxaforSharp", "vendor\LuxaforSharp\LuxaforSharp\LuxaforSharp.csproj", "{0A97A1A7-0B8B-4D77-BEC3-161E893C2527}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +52,10 @@ Global
 		{72DA7C19-43C1-4829-97BA-34D85E83290E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72DA7C19-43C1-4829-97BA-34D85E83290E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72DA7C19-43C1-4829-97BA-34D85E83290E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A97A1A7-0B8B-4D77-BEC3-161E893C2527}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A97A1A7-0B8B-4D77-BEC3-161E893C2527}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A97A1A7-0B8B-4D77-BEC3-161E893C2527}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A97A1A7-0B8B-4D77-BEC3-161E893C2527}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

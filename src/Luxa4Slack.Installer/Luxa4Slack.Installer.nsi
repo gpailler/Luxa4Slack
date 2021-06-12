@@ -21,7 +21,6 @@
   !endif
   !define BINARIES "${ROOT}\bin\${CONFIGURATION}"
   !define APPFILE_TRAY "Luxa4Slack.Tray.exe"
-  !define APPFILE_CONSOLE "Luxa4Slack.Console.exe"
 
   ; Resources
   !define LOGO "graphics\logo.ico"
@@ -50,18 +49,6 @@ Function .onInit
   ; Check Windows version
   ${IfNot} ${AtLeastWin8}
     MessageBox MB_OK|MB_ICONSTOP "Windows 8 or later is required in order to run ${APPNAME}."
-    Quit
-  ${EndIf}
-
-  ; Check .Net Framework 4.5.2
-  ; Magic numbers: http://msdn.microsoft.com/en-us/library/ee942965.aspx
-  ClearErrors
-  ReadRegDWORD $0 HKLM "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" "Release"
-  IfErrors NotDetected
-
-  ${If} $0 < 379893
-    NotDetected:
-    MessageBox MB_OK|MB_ICONSTOP "Microsoft .NET Framework 4.5.2 or later is required in order to run ${APPNAME}."
     Quit
   ${EndIf}
 FunctionEnd
@@ -134,7 +121,8 @@ Section "install"
 
   ; Files to include in the installer
   File /r "${BINARIES}\*.exe"
-  File /r "${BINARIES}\*.exe.config"
+  File /r "${BINARIES}\*.json"
+  File /r "${BINARIES}\*.config"
   File /r "${BINARIES}\*.dll"
   File "${LOGO}"
 
@@ -174,7 +162,6 @@ Section "uninstall"
 
   ; Kill running processes
   LockedList::CloseProcess /kill "$INSTDIR\${APPFILE_TRAY}"
-  LockedList::CloseProcess /kill "$INSTDIR\${APPFILE_CONSOLE}"
 
   ; Remove files
   RmDir /r $INSTDIR
@@ -187,7 +174,6 @@ SectionEnd
 Function LockedListShow
   !insertmacro MUI_HEADER_TEXT "Running applications" "Close running applications to continue."
   LockedList::AddModule "$INSTDIR\${APPFILE_TRAY}"
-  LockedList::AddModule "$INSTDIR\${APPFILE_CONSOLE}"
   LockedList::Dialog /autonext /autoclosesilent "" "Close All"
   Pop $R0
 FunctionEnd

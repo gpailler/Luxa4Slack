@@ -8,16 +8,29 @@
   using CG.Luxa4Slack.Tray.Properties;
 
   using Hardcodet.Wpf.TaskbarNotification;
+  using Microsoft.Extensions.Configuration;
+  using Microsoft.Extensions.DependencyInjection;
+  using Microsoft.Extensions.Logging;
+  using NLog;
+  using NLog.Extensions.Logging;
+  using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
   public partial class App : Application
   {
     public const string AppName = "Luxa4Slack";
+
+    private readonly ServiceProvider serviceProvider;
 
     private TaskbarIcon notifyIcon;
 
     private TrayViewModel viewModel;
 
     private Luxa4Slack luxa4Slack;
+
+    public App()
+    {
+      this.serviceProvider = this.ConfigureServices().BuildServiceProvider();
+    }
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -84,6 +97,27 @@
     private void OnLuxaforFailure()
     {
       this.viewModel.ShowError("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
+    }
+
+    private IServiceCollection ConfigureServices()
+    {
+      var serviceCollection = new ServiceCollection();
+
+      var config = new ConfigurationBuilder()
+        .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+        .Build();
+
+      serviceCollection.AddLogging(loggingBuilder =>
+      {
+        loggingBuilder.AddNLog(config);
+        loggingBuilder.SetMinimumLevel(LogLevel.Trace);
+
+        // Read NLog configuration from appsettings.json
+        LogManager.Configuration = new NLogLoggingConfiguration(config.GetSection("NLog"));
+      });
+
+      return serviceCollection;
     }
   }
 }

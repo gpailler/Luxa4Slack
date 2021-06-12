@@ -7,7 +7,7 @@
   using System.Windows.Media.Imaging;
 
   using GalaSoft.MvvmLight;
-  using GalaSoft.MvvmLight.CommandWpf;
+  using GalaSoft.MvvmLight.Command;
 
   public class TrayViewModel : ViewModelBase
   {

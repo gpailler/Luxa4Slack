@@ -1,30 +1,118 @@
-# This is a basic workflow to help you get started with Actions
+name: Luxa4Slack CI
 
-name: CI
-
-# Controls when the action will run. 
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
+    branches:
+      - '**'
+    tags:
+      - 'v*'
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    env:
+      CONFIGURATION: Release
+      PUBLISH_PLATFORM: win-x64
+      PUBLISHED_PROJECT: Luxa4Slack.Tray
+      NSIS_VERSION: 3.0.6.1
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    name: Build and Pack ⚙️📦
+    runs-on: windows-latest
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Full history is required by GitVersion
+          submodules: true
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: '5.x'
+
+      - name: Run GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Publish
+        run: >-
+          dotnet publish
+          ./src/${{ env.PUBLISHED_PROJECT }}/
+          --configuration ${{ env.CONFIGURATION }}
+          --runtime ${{ env.PUBLISH_PLATFORM }}
+          --output ./bin/${{ env.CONFIGURATION }}
+          --self-contained true
+          -p:Version=${{ steps.gitversion.outputs.AssemblySemVer }}
+          -p:FileVersion=${{ steps.gitversion.outputs.AssemblySemFileVer }}
+          -p:InformationalVersion=${{ steps.gitversion.outputs.InformationalVersion }}
+          -p:PublishSingleFile=false
+
+      - name: Pack
+        run: 7z a ${{ github.workspace }}/artifacts/${{ env.PUBLISHED_PROJECT }}-${{ env.PUBLISH_PLATFORM }}-${{ steps.gitversion.outputs.semVer }}.zip * -r
+        working-directory: ./bin/${{ env.CONFIGURATION }}
+
+      - name: Install NSIS
+        run: nuget install NSIS-Tool -Version ${{ env.NSIS_VERSION }}
+
+      - name: Build installer
+        run: |
+          $content = "!define VERSIONMAJOR ${{ steps.gitversion.outputs.Major }}`r`n"
+          $content += "!define VERSIONMINOR ${{ steps.gitversion.outputs.Minor }}`r`n"
+          $content += "!define VERSIONPATCH ${{ steps.gitversion.outputs.Patch }}`r`n"
+          $content | Set-Content Versions.nsh -Encoding ASCII
+
+          ${{ github.workspace }}/NSIS-Tool.${{ env.NSIS_VERSION }}/tools/makensis.exe /V4 /DCONFIGURATION=${{ env.CONFIGURATION }} Luxa4Slack.Installer.nsi
+        working-directory: ./src/Luxa4Slack.Installer/
+
+      - name: Upload zip archive
+        uses: actions/upload-artifact@v2
+        with:
+          name: Zip archive
+          path: ./artifacts/*.zip
+          if-no-files-found: error
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: Installer
+          path: ./artifacts/*.exe
+          if-no-files-found: error
+
+
+  release:
+    name: Release 🚀🌐
+    needs: [ build ]
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Download zip archive
+        uses: actions/download-artifact@v2
+        with:
+          name: Zip archive
+          path: ./artifacts/
+
+      - name: Download installer
+        uses: actions/download-artifact@v2
+        with:
+          name: Installer
+          path: ./artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ./artifacts/*.zip
+            ./artifacts/*.exe
+          draft: true

@@ -47,8 +47,8 @@
 ; Init
 Function .onInit
   ; Check Windows version
-  ${IfNot} ${AtLeastWin8}
-    MessageBox MB_OK|MB_ICONSTOP "Windows 8 or later is required in order to run ${APPNAME}."
+  ${IfNot} ${AtLeastWin8.1}
+    MessageBox MB_OK|MB_ICONSTOP "Windows 8.1 or later is required in order to run ${APPNAME}."
     Quit
   ${EndIf}
 FunctionEnd

@@ -4,6 +4,8 @@
     <RootNamespace>CG.Luxa4Slack.Tray</RootNamespace>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <StartupObject>CG.Luxa4Slack.Tray.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -16,7 +18,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="Icon.ico" />
-    <Resource Include="IconError.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Luxa4Slack\Luxa4Slack.csproj" />
@@ -27,6 +28,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.31" />
     <PackageReference Include="MvvmLightLibsStd10" Version="5.4.1.1" />
@@ -35,6 +37,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.logging.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

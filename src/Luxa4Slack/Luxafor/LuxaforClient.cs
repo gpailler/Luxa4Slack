@@ -10,6 +10,8 @@
 
   internal class LuxaforClient : IDisposable, ILuxaforClient
   {
+    private const int Timeout = 200;
+
     private static readonly Dictionary<LuxaforColor, Color> s_colorsMapping = new()
     {
       { LuxaforColor.None, new Color(0, 0, 0) },
@@ -35,6 +37,8 @@
     }
 
     public bool IsInitialized => _device != null;
+
+    public event Action? LuxaforFailed;
 
     private void Initialize()
     {
@@ -66,7 +70,7 @@
       _brightness = Math.Max(0, Math.Min(1, value));
     }
 
-    public async Task<bool> SetAsync(LuxaforColor color, int timeout = 200)
+    public async Task SetAsync(LuxaforColor color)
     {
       if (_device == null)
       {
@@ -80,31 +84,39 @@
         (byte)(s_colorsMapping[color].Green * _brightness),
         (byte)(s_colorsMapping[color].Blue * _brightness));
 
-      return await _device.AllLeds.SetColor(luxaforFinalColor, timeout: timeout);
+      await TryRunAsync(() => _device.AllLeds.SetColor(luxaforFinalColor, timeout: Timeout));
     }
 
-    public async Task<bool> ResetAsync()
+    public async Task ResetAsync()
     {
-      return await SetAsync(LuxaforColor.None);
+      await SetAsync(LuxaforColor.None);
     }
 
-    public async Task<bool> TestAsync()
-    {
-      _logger.LogDebug("Test device");
-
-      var result = await SetAsync(LuxaforColor.White);
-      await Task.Delay(200);
-      return result && await SetAsync(LuxaforColor.None);
-    }
-
-    public async Task<bool> StartWaveProcessingAsync()
+    public async Task StartWaveProcessingAsync()
     {
       if (_device == null)
       {
         throw new InvalidOperationException("Not initialized");
       }
 
-      return await _device.Wave(WaveType.OverlappingShort, s_colorsMapping[LuxaforColor.Yellow], 4, byte.MaxValue);
+      await TryRunAsync(() => _device.Wave(WaveType.OverlappingShort, s_colorsMapping[LuxaforColor.Yellow], 4, byte.MaxValue, timeout: Timeout));
+    }
+
+    private async Task TryRunAsync(Func<Task<bool>> task)
+    {
+      try
+      {
+        if (!await task())
+        {
+          _logger.LogError("Luxafor communication timeout");
+          LuxaforFailed?.Invoke();
+        }
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Luxafor communication error");
+        LuxaforFailed?.Invoke();
+      }
     }
   }
 }

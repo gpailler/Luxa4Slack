@@ -4,6 +4,8 @@
   using System.Threading.Tasks;
   using System.Windows;
   using System.Windows.Threading;
+  using CG.Luxa4Slack.Abstractions;
+  using CG.Luxa4Slack.Abstractions.Luxafor;
   using CG.Luxa4Slack.Tray.Options;
   using CG.Luxa4Slack.Tray.Views;
   using Microsoft.Extensions.Logging;
@@ -17,8 +19,10 @@
     private readonly ApplicationInfo _applicationInfo;
     private readonly Lazy<Dispatcher> _dispatcher;
     private readonly ILogger _logger;
+    private readonly ILuxa4SlackFactory _luxa4SlackFactory;
+    private readonly ILuxaforClient _luxaforClient;
 
-    private Luxa4Slack? _luxa4Slack;
+    private ILuxa4Slack? _luxa4Slack;
 
     public ApplicationStartup(
       IOptionsMonitor<ApplicationOptions> options,
@@ -26,7 +30,9 @@
       PreferencesWindowController preferencesWindowController,
       ApplicationInfo applicationInfo,
       Lazy<Dispatcher> dispatcher,
-      ILogger<ApplicationStartup> logger)
+      ILogger<ApplicationStartup> logger,
+      ILuxa4SlackFactory luxa4SlackFactory,
+      ILuxaforClient luxaforClient)
     {
       _options = options;
       _trayIconController = trayIconController;
@@ -34,8 +40,11 @@
       _applicationInfo = applicationInfo;
       _dispatcher = dispatcher;
       _logger = logger;
+      _luxa4SlackFactory = luxa4SlackFactory;
+      _luxaforClient = luxaforClient;
 
       _preferencesWindowController.OpenedChanged += OnPreferencesWindowWindowOpenedChanged;
+      _luxaforClient.LuxaforFailed += OnLuxaforFailed;
     }
 
     public void Run()
@@ -61,6 +70,8 @@
 
     public void Dispose()
     {
+      _preferencesWindowController.OpenedChanged -= OnPreferencesWindowWindowOpenedChanged;
+      _luxaforClient.LuxaforFailed -= OnLuxaforFailed;
       DeInitialize();
     }
 
@@ -87,18 +98,16 @@
       }
       else
       {
-        _luxa4Slack = new Luxa4Slack(
+        _luxa4Slack = _luxa4SlackFactory.Create(
           _options.CurrentValue.Tokens,
           _options.CurrentValue.ShowUnreadMentions,
           _options.CurrentValue.ShowUnreadMessages,
           _options.CurrentValue.ShowStatus,
           _options.CurrentValue.Brightness);
 
-        _luxa4Slack.LuxaforFailure += OnLuxaforFailure;
-
         try
         {
-          await _luxa4Slack.Initialize();
+          await _luxa4Slack.InitializeAsync();
         }
         catch (Exception ex)
         {
@@ -107,16 +116,17 @@
       }
     }
 
-    private void OnLuxaforFailure()
+    private void OnLuxaforFailed()
     {
-      ShowError("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
+      _luxaforClient.LuxaforFailed -= OnLuxaforFailed;
+      ShowError("Luxafor communication issue. Please unplug/replug the Luxafor device and restart the application");
     }
 
     private void ShowError(string message, Exception? ex = null)
     {
       _logger.LogError(ex, message);
       MessageBox.Show(message, _applicationInfo.Format("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
-      Application.Current.Shutdown();
+      _dispatcher.Value.Invoke(() => Application.Current.Shutdown());
     }
 
     private void OnPreferencesWindowWindowOpenedChanged(bool opened)

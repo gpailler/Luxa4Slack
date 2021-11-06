@@ -8,18 +8,16 @@
   using NLog;
   using NLog.Extensions.Logging;
 
-  static class Program
+  internal static class Program
   {
     [STAThread]
-    static void Main()
+    private static void Main()
     {
       var provider = ConfigureServices()
         .BuildServiceProvider(validateScopes: true);
 
-      using (var scope = provider.CreateScope())
-      {
-        scope.ServiceProvider.GetService<ApplicationStartup>()!.Run();
-      }
+      using var scope = provider.CreateScope();
+      scope.ServiceProvider.GetService<ApplicationStartup>()!.Run();
     }
 
     private static IServiceCollection ConfigureServices()

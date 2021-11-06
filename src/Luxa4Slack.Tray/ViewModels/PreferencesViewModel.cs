@@ -15,32 +15,32 @@
 
   public class PreferencesViewModel : ViewModelBase
   {
-    private readonly IWritableOptions<ApplicationOptions> options;
-    private readonly ILuxaforClient luxaforClient;
+    private readonly IWritableOptions<ApplicationOptions> _options;
+    private readonly ILuxaforClient _luxaforClient;
 
-    private int brightness;
-    private string newToken = string.Empty;
-    private CancellationTokenSource? cancellationTokenSource;
+    private int _brightness;
+    private string _newToken = string.Empty;
+    private CancellationTokenSource? _cancellationTokenSource;
 
     public PreferencesViewModel(IWritableOptions<ApplicationOptions> options, ApplicationInfo applicationInfo, IMessenger messenger, ILuxaforClient luxaforClient)
     {
-      this.options = options;
-      this.Title = applicationInfo.Format("Preferences");
-      this.Tokens = new ObservableCollection<SlackToken>();
+      _options = options;
+      Title = applicationInfo.Format("Preferences");
+      Tokens = new ObservableCollection<SlackToken>();
 
-      this.UpdatePreferencesCommand = new RelayCommand(() =>
+      UpdatePreferencesCommand = new RelayCommand(() =>
       {
-        this.SaveSettings();
-        this.CloseCommand?.Execute(null);
+        SaveSettings();
+        CloseCommand?.Execute(null);
       });
-      this.CloseCommand = new RelayCommand(() => messenger.Send(new CloseWindowMessage()), true);
-      this.RequestTokenCommand = new RelayCommand(() => Process.Start(new ProcessStartInfo(OAuthHelper.GetAuthorizationUri().ToString()) { UseShellExecute = true }));
-      this.RemoveTokenCommand = new RelayCommand<SlackToken>(x => this.Tokens.Remove(x));
-      this.AddTokenCommand = new RelayCommand(() => this.AddToken());
+      CloseCommand = new RelayCommand(() => messenger.Send(new CloseWindowMessage()), true);
+      RequestTokenCommand = new RelayCommand(() => Process.Start(new ProcessStartInfo(OAuthHelper.GetAuthorizationUri().ToString()) { UseShellExecute = true }));
+      RemoveTokenCommand = new RelayCommand<SlackToken>(x => Tokens.Remove(x));
+      AddTokenCommand = new RelayCommand(() => AddToken());
 
-      this.luxaforClient = luxaforClient;
+      _luxaforClient = luxaforClient;
 
-      this.LoadSettings();
+      LoadSettings();
     }
 
     public ICommand UpdatePreferencesCommand { get; }
@@ -65,32 +65,32 @@
 
     public int Brightness
     {
-      get { return this.brightness; }
+      get => _brightness;
       set
       {
-        if (this.Set(ref this.brightness, value))
+        if (Set(ref _brightness, value))
         {
-          this.RaisePropertyChanged(nameof(this.BrightnessPercent));
-          this.UpdateLuxafor(this.BrightnessPercent);
+          RaisePropertyChanged(nameof(BrightnessPercent));
+          UpdateLuxafor(BrightnessPercent);
         }
       }
     }
 
     public double BrightnessPercent
     {
-      get => this.Brightness / 100d;
-      set => this.Brightness = (int)(value * 100d);
+      get => Brightness / 100d;
+      set => Brightness = (int)(value * 100d);
     }
 
     public string NewToken
     {
-      get { return this.newToken; }
-      set { this.Set(ref this.newToken, value); }
+      get => _newToken;
+      set => Set(ref _newToken, value);
     }
 
     public override void Cleanup()
     {
-      cancellationTokenSource?.Cancel();
+      _cancellationTokenSource?.Cancel();
 
       base.Cleanup();
     }
@@ -98,47 +98,47 @@
     private void UpdateLuxafor(double brightnessPercent)
     {
       // Cancel pending updates
-      cancellationTokenSource?.Cancel();
-      cancellationTokenSource = new CancellationTokenSource();
+      _cancellationTokenSource?.Cancel();
+      _cancellationTokenSource = new CancellationTokenSource();
 
       Task.Run(async () =>
       {
-        this.luxaforClient.SetBrightness(brightnessPercent);
-        await this.luxaforClient.SetAsync(LuxaforColor.White);
-      }, cancellationTokenSource.Token);
+        _luxaforClient.SetBrightness(brightnessPercent);
+        await _luxaforClient.SetAsync(LuxaforColor.White);
+      }, _cancellationTokenSource.Token);
     }
 
     private void LoadSettings()
     {
-      this.options.Value.Tokens
+      _options.Value.Tokens
         .Select(x => new SlackToken(x))
-        .ForEach(this.Tokens.Add);
+        .ForEach(Tokens.Add);
 
-      this.ShowUnreadMentions = this.options.Value.ShowUnreadMentions;
-      this.ShowUnreadMessages = this.options.Value.ShowUnreadMessages;
-      this.ShowStatus = this.options.Value.ShowStatus;
-      this.BrightnessPercent = this.options.Value.Brightness;
+      ShowUnreadMentions = _options.Value.ShowUnreadMentions;
+      ShowUnreadMessages = _options.Value.ShowUnreadMessages;
+      ShowStatus = _options.Value.ShowStatus;
+      BrightnessPercent = _options.Value.Brightness;
     }
 
     private void SaveSettings()
     {
-      this.options.Update(x =>
+      _options.Update(x =>
       {
-        x.Tokens = this.Tokens.Select(slackToken => slackToken.Token).ToArray();
-        x.ShowUnreadMentions = this.ShowUnreadMentions;
-        x.ShowUnreadMessages = this.ShowUnreadMessages;
-        x.ShowStatus = this.ShowStatus;
-        x.Brightness = this.BrightnessPercent;
+        x.Tokens = Tokens.Select(slackToken => slackToken.Token).ToArray();
+        x.ShowUnreadMentions = ShowUnreadMentions;
+        x.ShowUnreadMessages = ShowUnreadMessages;
+        x.ShowStatus = ShowStatus;
+        x.Brightness = BrightnessPercent;
       });
     }
 
     private void AddToken()
     {
-      var tokenToAdd = this.NewToken.Trim();
+      var tokenToAdd = NewToken.Trim();
       if (!string.IsNullOrEmpty(tokenToAdd))
       {
-        this.Tokens.Add(new SlackToken(tokenToAdd));
-        this.NewToken = string.Empty;
+        Tokens.Add(new SlackToken(tokenToAdd));
+        NewToken = string.Empty;
       }
     }
 
@@ -146,13 +146,13 @@
     {
       public SlackToken(string token)
       {
-        this.Token = token;
-        this.Workspace = "Loading...";
+        Token = token;
+        Workspace = "Loading...";
 
         Task.Run(() =>
         {
-          this.Workspace = WorkspaceHelper.GetWorkspace(token);
-          this.RaisePropertyChanged(nameof(this.Workspace));
+          Workspace = WorkspaceHelper.GetWorkspace(token);
+          RaisePropertyChanged(nameof(Workspace));
         });
       }
 

@@ -9,9 +9,9 @@
     public ApplicationInfo()
     {
       var fileVersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-      this.Name = fileVersionInfo.ProductName;
-      this.Version = fileVersionInfo.FileVersion;
-      this.ApplicationPath = Path.GetDirectoryName(fileVersionInfo.FileName)!;
+      Name = fileVersionInfo.ProductName;
+      Version = fileVersionInfo.FileVersion;
+      ApplicationPath = Path.GetDirectoryName(fileVersionInfo.FileName)!;
     }
 
     public string ApplicationPath { get; }
@@ -24,7 +24,7 @@
 
     public string Format(string text)
     {
-      return $"{this.DisplayName} - {text}";
+      return $"{DisplayName} - {text}";
     }
   }
 }

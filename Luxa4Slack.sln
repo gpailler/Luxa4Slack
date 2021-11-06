@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C7A15E77-F1BC-45F4-9391-ECDC2AA7D892}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		.github\workflows\main.yml = .github\workflows\main.yml
+		src\.editorconfig = src\.editorconfig
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Luxa4Slack", "src\Luxa4Slack\Luxa4Slack.csproj", "{0E48DD4A-74D2-4C38-9B55-FCF0C17CAFD1}"

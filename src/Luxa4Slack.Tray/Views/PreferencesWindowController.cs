@@ -4,25 +4,25 @@
 
   public class PreferencesWindowController
   {
-    private readonly Func<PreferencesWindow> preferencesWindowFactory;
-    private PreferencesWindow? preferencesWindow;
+    private readonly Func<PreferencesWindow> _preferencesWindowFactory;
+    private PreferencesWindow? _preferencesWindow;
 
     public PreferencesWindowController(Func<PreferencesWindow> preferencesWindowFactory)
     {
-      this.preferencesWindowFactory = preferencesWindowFactory;
+      _preferencesWindowFactory = preferencesWindowFactory;
     }
 
     public event Action<bool>? OpenedChanged;
 
     public void ShowDialog()
     {
-      if (this.preferencesWindow == null)
+      if (_preferencesWindow == null)
       {
-        this.OpenedChanged?.Invoke(true);
-        this.preferencesWindow = this.preferencesWindowFactory();
-        this.preferencesWindow.ShowDialog();
-        this.preferencesWindow = null;
-        this.OpenedChanged?.Invoke(false);
+        OpenedChanged?.Invoke(true);
+        _preferencesWindow = _preferencesWindowFactory();
+        _preferencesWindow.ShowDialog();
+        _preferencesWindow = null;
+        OpenedChanged?.Invoke(false);
       }
     }
   }

@@ -10,10 +10,10 @@
 
   public class WritableOptions<T> : IWritableOptions<T> where T : class, new()
   {
-    private readonly IOptionsMonitor<T> options;
-    private readonly string section;
-    private readonly string filePath;
-    private readonly ILogger logger;
+    private readonly IOptionsMonitor<T> _options;
+    private readonly string _section;
+    private readonly string _filePath;
+    private readonly ILogger _logger;
 
     public WritableOptions(
       IOptionsMonitor<T> options,
@@ -21,33 +21,33 @@
       string filePath,
       ILogger logger)
     {
-      this.options = options;
-      this.section = section;
-      this.filePath = filePath;
-      this.logger = logger;
+      _options = options;
+      _section = section;
+      _filePath = filePath;
+      _logger = logger;
     }
 
-    public T Value => this.options.CurrentValue;
-    public T Get(string name) => this.options.Get(name);
+    public T Value => _options.CurrentValue;
+    public T Get(string name) => _options.Get(name);
 
     public void Update(Action<T> applyChanges)
     {
-      var jObject = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(this.filePath));
+      var jObject = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(_filePath));
       if (jObject == null)
       {
-        this.logger.LogError($"Unable to deserialize '{this.filePath}'");
+        _logger.LogError($"Unable to deserialize '{_filePath}'");
       }
       else
       {
-        var sectionObject = (jObject.TryGetValue(this.section, out JToken? jsonSection)
+        var sectionObject = (jObject.TryGetValue(_section, out var jsonSection)
           ? JsonConvert.DeserializeObject<T>(jsonSection.ToString())
-          : this.Value) ?? new T();
+          : Value) ?? new T();
 
         applyChanges(sectionObject);
 
-        jObject[this.section] = JObject.Parse(JsonConvert.SerializeObject(sectionObject));
-        this.logger.LogDebug($"Write options to '{this.filePath}'");
-        File.WriteAllText(this.filePath, JsonConvert.SerializeObject(jObject, Formatting.Indented));
+        jObject[_section] = JObject.Parse(JsonConvert.SerializeObject(sectionObject));
+        _logger.LogDebug($"Write options to '{_filePath}'");
+        File.WriteAllText(_filePath, JsonConvert.SerializeObject(jObject, Formatting.Indented));
       }
     }
   }

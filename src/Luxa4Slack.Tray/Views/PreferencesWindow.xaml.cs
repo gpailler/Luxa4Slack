@@ -1,35 +1,34 @@
 ﻿namespace CG.Luxa4Slack.Tray.Views
 {
   using System;
-  using System.Windows;
   using CG.Luxa4Slack.Tray.ViewModels;
   using GalaSoft.MvvmLight;
   using GalaSoft.MvvmLight.Messaging;
 
-  public partial class PreferencesWindow : Window
+  public partial class PreferencesWindow
   {
-    private readonly IMessenger messenger;
+    private readonly IMessenger _messenger;
 
     public PreferencesWindow(PreferencesViewModel viewModel, IMessenger messenger)
     {
-      this.messenger = messenger;
+      _messenger = messenger;
 
-      this.InitializeComponent();
-      this.DataContext = viewModel;
+      InitializeComponent();
+      DataContext = viewModel;
 
-      messenger.Register<CloseWindowMessage>(this.DataContext, this.CloseWindow);
+      messenger.Register<CloseWindowMessage>(DataContext, CloseWindow);
     }
 
     protected override void OnClosed(EventArgs e)
     {
-      messenger.Unregister<CloseWindowMessage>(this.DataContext, this.CloseWindow);
-      (this.DataContext as ICleanup)?.Cleanup();
+      _messenger.Unregister<CloseWindowMessage>(DataContext, CloseWindow);
+      (DataContext as ICleanup)?.Cleanup();
       base.OnClosed(e);
     }
 
     private void CloseWindow(CloseWindowMessage _)
     {
-      this.Close();
+      Close();
     }
   }
 }

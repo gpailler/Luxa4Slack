@@ -11,14 +11,14 @@
 
   public class ApplicationStartup : IDisposable
   {
-    private readonly IOptionsMonitor<ApplicationOptions> options;
-    private readonly TrayIconController trayIconController;
-    private readonly PreferencesWindowController preferencesWindowController;
-    private readonly ApplicationInfo applicationInfo;
-    private readonly Lazy<Dispatcher> dispatcher;
-    private readonly ILogger logger;
+    private readonly IOptionsMonitor<ApplicationOptions> _options;
+    private readonly TrayIconController _trayIconController;
+    private readonly PreferencesWindowController _preferencesWindowController;
+    private readonly ApplicationInfo _applicationInfo;
+    private readonly Lazy<Dispatcher> _dispatcher;
+    private readonly ILogger _logger;
 
-    private Luxa4Slack? luxa4Slack;
+    private Luxa4Slack? _luxa4Slack;
 
     public ApplicationStartup(
       IOptionsMonitor<ApplicationOptions> options,
@@ -28,94 +28,94 @@
       Lazy<Dispatcher> dispatcher,
       ILogger<ApplicationStartup> logger)
     {
-      this.options = options;
-      this.trayIconController = trayIconController;
-      this.preferencesWindowController = preferencesWindowController;
-      this.applicationInfo = applicationInfo;
-      this.dispatcher = dispatcher;
-      this.logger = logger;
+      _options = options;
+      _trayIconController = trayIconController;
+      _preferencesWindowController = preferencesWindowController;
+      _applicationInfo = applicationInfo;
+      _dispatcher = dispatcher;
+      _logger = logger;
 
-      this.preferencesWindowController.OpenedChanged += OnPreferencesWindowWindowOpenedChanged;
+      _preferencesWindowController.OpenedChanged += OnPreferencesWindowWindowOpenedChanged;
     }
 
     public void Run()
     {
-      this.logger.LogInformation($"Starting {this.applicationInfo.DisplayName}");
+      _logger.LogInformation($"Starting {_applicationInfo.DisplayName}");
 
       try
       {
         var app = new App();
         app.InitializeComponent();
 
-        this.dispatcher.Value.Invoke(() => this.trayIconController.Init());
+        _dispatcher.Value.Invoke(() => _trayIconController.Init());
 
-        this.Initialize();
+        Initialize();
 
         app.Run();
       }
       catch (Exception ex)
       {
-        this.logger.LogError(ex, "Error while running.");
+        _logger.LogError(ex, "Error while running.");
       }
     }
 
     public void Dispose()
     {
-      this.DeInitialize();
+      DeInitialize();
     }
 
     private void Initialize()
     {
-      Task.Run(async () => await this.InitializeAsync());
+      Task.Run(async () => await InitializeAsync());
     }
 
     private void DeInitialize()
     {
-      this.luxa4Slack?.Dispose();
-      this.luxa4Slack = null;
+      _luxa4Slack?.Dispose();
+      _luxa4Slack = null;
     }
 
     private async Task InitializeAsync()
     {
-      this.logger.LogInformation("Initializing");
+      _logger.LogInformation("Initializing");
 
-      this.luxa4Slack?.Dispose();
+      _luxa4Slack?.Dispose();
 
-      if (this.options.CurrentValue.Tokens.Length == 0)
+      if (_options.CurrentValue.Tokens.Length == 0)
       {
-        this.dispatcher.Value.Invoke(() => this.preferencesWindowController.ShowDialog());
+        _dispatcher.Value.Invoke(() => _preferencesWindowController.ShowDialog());
       }
       else
       {
-        this.luxa4Slack = new Luxa4Slack(
-          this.options.CurrentValue.Tokens,
-          this.options.CurrentValue.ShowUnreadMentions,
-          this.options.CurrentValue.ShowUnreadMessages,
-          this.options.CurrentValue.ShowStatus,
-          this.options.CurrentValue.Brightness);
+        _luxa4Slack = new Luxa4Slack(
+          _options.CurrentValue.Tokens,
+          _options.CurrentValue.ShowUnreadMentions,
+          _options.CurrentValue.ShowUnreadMessages,
+          _options.CurrentValue.ShowStatus,
+          _options.CurrentValue.Brightness);
 
-        this.luxa4Slack.LuxaforFailure += this.OnLuxaforFailure;
+        _luxa4Slack.LuxaforFailure += OnLuxaforFailure;
 
         try
         {
-          await this.luxa4Slack.Initialize();
+          await _luxa4Slack.Initialize();
         }
         catch (Exception ex)
         {
-          this.ShowError($"Unable to initialize Luxa4Slack: {ex.Message}", ex);
+          ShowError($"Unable to initialize Luxa4Slack: {ex.Message}", ex);
         }
       }
     }
 
     private void OnLuxaforFailure()
     {
-      this.ShowError("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
+      ShowError("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
     }
 
     private void ShowError(string message, Exception? ex = null)
     {
-      this.logger.LogError(ex, message);
-      MessageBox.Show(message, applicationInfo.Format("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+      _logger.LogError(ex, message);
+      MessageBox.Show(message, _applicationInfo.Format("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
       Application.Current.Shutdown();
     }
 
@@ -123,11 +123,11 @@
     {
       if (opened)
       {
-        this.DeInitialize();
+        DeInitialize();
       }
       else
       {
-        this.Initialize();
+        Initialize();
       }
     }
   }

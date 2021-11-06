@@ -5,24 +5,25 @@
 
   internal static class WorkspaceHelper
   {
+    private const int Timeout = 10000;
+
     public static string GetWorkspace(string token)
     {
-      using (var connectionEvent = new ManualResetEventSlim(false))
+      using var connectionEvent = new ManualResetEventSlim(false);
+      var client = new SlackClient(token);
+
+      LoginResponse? loginResponse = null;
+      client.Connect(response =>
       {
-        var client = new SlackClient(token);
+        loginResponse = response;
+        // ReSharper disable once AccessToDisposedClosure
+        connectionEvent.Set();
+      });
+      connectionEvent.Wait(Timeout);
 
-        LoginResponse loginResponse = null;
-        client.Connect(response =>
-        {
-          loginResponse = response;
-          connectionEvent.Set();
-        });
-        connectionEvent.Wait();
-
-        return loginResponse.ok
-          ? loginResponse.team.name
-          : loginResponse.error;
-      }
+      return loginResponse?.ok == true
+        ? loginResponse.team.name
+        : loginResponse?.error ?? "Empty response";
     }
   }
 }

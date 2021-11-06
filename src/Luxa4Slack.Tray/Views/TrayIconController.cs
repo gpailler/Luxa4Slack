@@ -7,23 +7,23 @@
 
   public class TrayIconController : IDisposable
   {
-    private readonly TrayIconViewModel trayIconViewModel;
-    private TaskbarIcon? notifyIcon;
+    private readonly TrayIconViewModel _trayIconViewModel;
+    private TaskbarIcon? _notifyIcon;
 
     public TrayIconController(TrayIconViewModel trayIconViewModel)
     {
-      this.trayIconViewModel = trayIconViewModel;
+      _trayIconViewModel = trayIconViewModel;
     }
 
     public void Init()
     {
-      this.notifyIcon = (TaskbarIcon)Application.Current.FindResource("NotifyIcon")!;
-      this.notifyIcon.DataContext = trayIconViewModel;
+      _notifyIcon = (TaskbarIcon)Application.Current.FindResource("NotifyIcon")!;
+      _notifyIcon.DataContext = _trayIconViewModel;
     }
 
     public void Dispose()
     {
-      this.notifyIcon?.Dispose();
+      _notifyIcon?.Dispose();
     }
   }
 }

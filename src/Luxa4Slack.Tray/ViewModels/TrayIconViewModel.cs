@@ -13,12 +13,13 @@
   {
     public TrayIconViewModel(PreferencesWindowController preferencesWindowController, ApplicationInfo applicationInfo)
     {
-      this.ShowPreferencesCommand = new RelayCommand(() => preferencesWindowController.ShowDialog(), true);
-      this.ExitApplicationCommand = new RelayCommand(() => Application.Current.Shutdown(), true);
-      this.ToolTip = applicationInfo.DisplayName;
+      ShowPreferencesCommand = new RelayCommand(() => preferencesWindowController.ShowDialog(), true);
+      ExitApplicationCommand = new RelayCommand(() => Application.Current.Shutdown(), true);
+      Icon = new BitmapImage(new Uri("pack://application:,,,/Luxa4Slack.Tray;component/Icon.ico"));
+      ToolTip = applicationInfo.DisplayName;
     }
 
-    public ImageSource Icon => new BitmapImage(new Uri("pack://application:,,,/Luxa4Slack.Tray;component/Icon.ico"));
+    public ImageSource Icon { get; }
 
     public string ToolTip { get; }
 

@@ -8,6 +8,7 @@
   using CG.Luxa4Slack.Abstractions.Luxafor;
   using CG.Luxa4Slack.Tray.Options;
   using CG.Luxa4Slack.Tray.Views;
+  using Microsoft.Extensions.Configuration;
   using Microsoft.Extensions.Logging;
   using Microsoft.Extensions.Options;
 
@@ -21,6 +22,7 @@
     private readonly ILogger _logger;
     private readonly ILuxa4SlackFactory _luxa4SlackFactory;
     private readonly ILuxaforClient _luxaforClient;
+    private readonly IConfigurationRoot _configurationRoot;
 
     private ILuxa4Slack? _luxa4Slack;
 
@@ -32,7 +34,8 @@
       Lazy<Dispatcher> dispatcher,
       ILogger<ApplicationStartup> logger,
       ILuxa4SlackFactory luxa4SlackFactory,
-      ILuxaforClient luxaforClient)
+      ILuxaforClient luxaforClient,
+      IConfigurationRoot configurationRoot)
     {
       _options = options;
       _trayIconController = trayIconController;
@@ -42,6 +45,7 @@
       _logger = logger;
       _luxa4SlackFactory = luxa4SlackFactory;
       _luxaforClient = luxaforClient;
+      _configurationRoot = configurationRoot;
 
       _preferencesWindowController.OpenedChanged += OnPreferencesWindowWindowOpenedChanged;
       _luxaforClient.LuxaforFailed += OnLuxaforFailed;
@@ -137,6 +141,7 @@
       }
       else
       {
+        _configurationRoot.Reload();
         Initialize();
       }
     }

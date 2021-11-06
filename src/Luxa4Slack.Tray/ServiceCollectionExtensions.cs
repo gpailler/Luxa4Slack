@@ -22,8 +22,8 @@
 
       serviceCollection.AddTransient<PreferencesViewModel>();
       serviceCollection.AddTransient<PreferencesWindow>();
-      serviceCollection.AddSingleton<PreferencesWindowFactory>();
-      serviceCollection.AddSingleton<Func<PreferencesWindow?>>(x => x.GetService<PreferencesWindow>);
+      serviceCollection.AddSingleton<PreferencesWindowController>();
+      serviceCollection.AddSingleton<Func<PreferencesWindow>>(x => x.GetRequiredService<PreferencesWindow>);
     }
   }
 }

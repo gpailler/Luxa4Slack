@@ -13,7 +13,7 @@
   {
     private readonly IOptionsMonitor<ApplicationOptions> options;
     private readonly TrayIconController trayIconController;
-    private readonly PreferencesWindowFactory preferencesWindowFactory;
+    private readonly PreferencesWindowController preferencesWindowController;
     private readonly ApplicationInfo applicationInfo;
     private readonly Lazy<Dispatcher> dispatcher;
     private readonly ILogger logger;
@@ -23,19 +23,19 @@
     public ApplicationStartup(
       IOptionsMonitor<ApplicationOptions> options,
       TrayIconController trayIconController,
-      PreferencesWindowFactory preferencesWindowFactory,
+      PreferencesWindowController preferencesWindowController,
       ApplicationInfo applicationInfo,
       Lazy<Dispatcher> dispatcher,
       ILogger<ApplicationStartup> logger)
     {
       this.options = options;
       this.trayIconController = trayIconController;
-      this.preferencesWindowFactory = preferencesWindowFactory;
+      this.preferencesWindowController = preferencesWindowController;
       this.applicationInfo = applicationInfo;
       this.dispatcher = dispatcher;
       this.logger = logger;
 
-      this.preferencesWindowFactory.OpenedChanged += OnPreferencesWindowWindowOpenedChanged;
+      this.preferencesWindowController.OpenedChanged += OnPreferencesWindowWindowOpenedChanged;
     }
 
     public void Run()
@@ -83,7 +83,7 @@
 
       if (this.options.CurrentValue.Tokens.Length == 0)
       {
-        this.dispatcher.Value.Invoke(() => this.preferencesWindowFactory.ShowDialog());
+        this.dispatcher.Value.Invoke(() => this.preferencesWindowController.ShowDialog());
       }
       else
       {

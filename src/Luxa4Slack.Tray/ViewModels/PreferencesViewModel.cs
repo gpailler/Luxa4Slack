@@ -6,6 +6,7 @@
   using System.Threading;
   using System.Threading.Tasks;
   using System.Windows.Input;
+  using CG.Luxa4Slack.Abstractions;
   using CG.Luxa4Slack.Extensions;
   using CG.Luxa4Slack.Tray.Options;
   using GalaSoft.MvvmLight;
@@ -15,13 +16,13 @@
   public class PreferencesViewModel : ViewModelBase
   {
     private readonly IWritableOptions<ApplicationOptions> options;
-    private readonly LuxaforClient luxaforClient;
+    private readonly ILuxaforClient luxaforClient;
 
     private int brightness;
     private string newToken = string.Empty;
     private CancellationTokenSource? cancellationTokenSource;
 
-    public PreferencesViewModel(IWritableOptions<ApplicationOptions> options, ApplicationInfo applicationInfo, IMessenger messenger)
+    public PreferencesViewModel(IWritableOptions<ApplicationOptions> options, ApplicationInfo applicationInfo, IMessenger messenger, ILuxaforClient luxaforClient)
     {
       this.options = options;
       this.Title = applicationInfo.Format("Preferences");
@@ -37,8 +38,7 @@
       this.RemoveTokenCommand = new RelayCommand<SlackToken>(x => this.Tokens.Remove(x));
       this.AddTokenCommand = new RelayCommand(() => this.AddToken());
 
-      this.luxaforClient = new LuxaforClient();
-      this.luxaforClient.Initialize();
+      this.luxaforClient = luxaforClient;
 
       this.LoadSettings();
     }
@@ -91,7 +91,6 @@
     public override void Cleanup()
     {
       cancellationTokenSource?.Cancel();
-      this.luxaforClient.Dispose();
 
       base.Cleanup();
     }
@@ -105,7 +104,7 @@
       Task.Run(async () =>
       {
         this.luxaforClient.SetBrightness(brightnessPercent);
-        await this.luxaforClient.SetAsync(LuxaforClient.Colors.White);
+        await this.luxaforClient.SetAsync(LuxaforColor.White);
       }, cancellationTokenSource.Token);
     }
 

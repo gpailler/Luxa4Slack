@@ -2,12 +2,12 @@
 {
   using System;
 
-  public class PreferencesWindowFactory
+  public class PreferencesWindowController
   {
     private readonly Func<PreferencesWindow> preferencesWindowFactory;
     private PreferencesWindow? preferencesWindow;
 
-    public PreferencesWindowFactory(Func<PreferencesWindow> preferencesWindowFactory)
+    public PreferencesWindowController(Func<PreferencesWindow> preferencesWindowFactory)
     {
       this.preferencesWindowFactory = preferencesWindowFactory;
     }

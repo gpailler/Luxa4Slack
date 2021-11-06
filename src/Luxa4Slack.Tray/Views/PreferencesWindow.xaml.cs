@@ -2,8 +2,7 @@
 {
   using System;
   using CG.Luxa4Slack.Tray.ViewModels;
-  using GalaSoft.MvvmLight;
-  using GalaSoft.MvvmLight.Messaging;
+  using Microsoft.Toolkit.Mvvm.Messaging;
 
   public partial class PreferencesWindow
   {
@@ -16,17 +15,16 @@
       InitializeComponent();
       DataContext = viewModel;
 
-      messenger.Register<CloseWindowMessage>(DataContext, CloseWindow);
+      messenger.Register<CloseWindowMessage>(this, CloseWindow);
     }
 
     protected override void OnClosed(EventArgs e)
     {
-      _messenger.Unregister<CloseWindowMessage>(DataContext, CloseWindow);
-      (DataContext as ICleanup)?.Cleanup();
+      _messenger.Unregister<CloseWindowMessage>(this);
       base.OnClosed(e);
     }
 
-    private void CloseWindow(CloseWindowMessage _)
+    private void CloseWindow(object recipient, CloseWindowMessage message)
     {
       Close();
     }

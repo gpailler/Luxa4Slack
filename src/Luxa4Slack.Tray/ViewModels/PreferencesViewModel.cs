@@ -9,11 +9,11 @@
   using CG.Luxa4Slack.Abstractions;
   using CG.Luxa4Slack.Extensions;
   using CG.Luxa4Slack.Tray.Options;
-  using GalaSoft.MvvmLight;
-  using GalaSoft.MvvmLight.Command;
-  using GalaSoft.MvvmLight.Messaging;
+  using Microsoft.Toolkit.Mvvm.ComponentModel;
+  using Microsoft.Toolkit.Mvvm.Input;
+  using Microsoft.Toolkit.Mvvm.Messaging;
 
-  public class PreferencesViewModel : ViewModelBase
+  public class PreferencesViewModel : ObservableRecipient
   {
     private readonly IWritableOptions<ApplicationOptions> _options;
     private readonly ILuxaforClient _luxaforClient;
@@ -23,6 +23,7 @@
     private CancellationTokenSource? _cancellationTokenSource;
 
     public PreferencesViewModel(IWritableOptions<ApplicationOptions> options, ApplicationInfo applicationInfo, IMessenger messenger, ILuxaforClient luxaforClient)
+      : base(messenger)
     {
       _options = options;
       Title = applicationInfo.Format("Preferences");
@@ -33,9 +34,9 @@
         SaveSettings();
         CloseCommand?.Execute(null);
       });
-      CloseCommand = new RelayCommand(() => messenger.Send(new CloseWindowMessage()), true);
+      CloseCommand = new RelayCommand(() => Messenger.Send(new CloseWindowMessage()));
       RequestTokenCommand = new RelayCommand(() => Process.Start(new ProcessStartInfo(OAuthHelper.GetAuthorizationUri().ToString()) { UseShellExecute = true }));
-      RemoveTokenCommand = new RelayCommand<SlackToken>(x => Tokens.Remove(x));
+      RemoveTokenCommand = new RelayCommand<SlackToken>(x => Tokens.Remove(x!));
       AddTokenCommand = new RelayCommand(() => AddToken());
 
       _luxaforClient = luxaforClient;
@@ -68,9 +69,9 @@
       get => _brightness;
       set
       {
-        if (Set(ref _brightness, value))
+        if (SetProperty(ref _brightness, value))
         {
-          RaisePropertyChanged(nameof(BrightnessPercent));
+          OnPropertyChanged(nameof(BrightnessPercent));
           UpdateLuxafor(BrightnessPercent);
         }
       }
@@ -85,14 +86,7 @@
     public string NewToken
     {
       get => _newToken;
-      set => Set(ref _newToken, value);
-    }
-
-    public override void Cleanup()
-    {
-      _cancellationTokenSource?.Cancel();
-
-      base.Cleanup();
+      set => SetProperty(ref _newToken, value);
     }
 
     private void UpdateLuxafor(double brightnessPercent)
@@ -142,7 +136,7 @@
       }
     }
 
-    public class SlackToken : ViewModelBase
+    public class SlackToken : ObservableObject
     {
       public SlackToken(string token)
       {
@@ -152,7 +146,7 @@
         Task.Run(() =>
         {
           Workspace = WorkspaceHelper.GetWorkspace(token);
-          RaisePropertyChanged(nameof(Workspace));
+          OnPropertyChanged(nameof(Workspace));
         });
       }
 

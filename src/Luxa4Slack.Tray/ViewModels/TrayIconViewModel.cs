@@ -6,20 +6,22 @@
   using System.Windows.Media;
   using System.Windows.Media.Imaging;
   using CG.Luxa4Slack.Tray.Views;
-  using GalaSoft.MvvmLight;
-  using GalaSoft.MvvmLight.Command;
+  using Microsoft.Toolkit.Mvvm.ComponentModel;
+  using Microsoft.Toolkit.Mvvm.Input;
 
-  public class TrayIconViewModel : ViewModelBase
+  public class TrayIconViewModel : ObservableObject
   {
+    private readonly Lazy<ImageSource> _lazyIcon;
+
     public TrayIconViewModel(PreferencesWindowController preferencesWindowController, ApplicationInfo applicationInfo)
     {
-      ShowPreferencesCommand = new RelayCommand(() => preferencesWindowController.ShowDialog(), true);
-      ExitApplicationCommand = new RelayCommand(() => Application.Current.Shutdown(), true);
-      Icon = new BitmapImage(new Uri("pack://application:,,,/Luxa4Slack.Tray;component/Icon.ico"));
+      ShowPreferencesCommand = new RelayCommand(() => preferencesWindowController.ShowDialog());
+      ExitApplicationCommand = new RelayCommand(() => Application.Current.Shutdown());
+      _lazyIcon = new Lazy<ImageSource>(() => new BitmapImage(new Uri("pack://application:,,,/Luxa4Slack.Tray;component/Icon.ico")));
       ToolTip = applicationInfo.DisplayName;
     }
 
-    public ImageSource Icon { get; }
+    public ImageSource Icon => _lazyIcon.Value;
 
     public string ToolTip { get; }
 

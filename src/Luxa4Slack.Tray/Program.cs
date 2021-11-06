@@ -17,7 +17,8 @@
         .BuildServiceProvider(validateScopes: true);
 
       using var scope = provider.CreateScope();
-      scope.ServiceProvider.GetService<ApplicationStartup>()!.Run();
+      scope.ServiceProvider.GetRequiredService<ApplicationStartup>().Run();
+      provider.Dispose();
     }
 
     private static IServiceCollection ConfigureServices()
@@ -43,6 +44,7 @@
       });
 
       serviceCollection.RegisterLuxa4SlackTray();
+      serviceCollection.RegisterLuxa4Slack();
 
       return serviceCollection;
     }

@@ -3,27 +3,18 @@
     <RootNamespace>CG.Luxa4Slack</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>portable</DebugType>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Luxa4Slack.OAuth.AzureFunctions\OAuthInfo.cs" Link="OAuthInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Luxa4Slack.Abstractions\Luxa4Slack.Abstractions.csproj" />
     <ProjectReference Include="..\..\vendor\LuxaforSharp\LuxaforSharp\LuxaforSharp.csproj" />
     <ProjectReference Include="..\..\vendor\SlackAPI\SlackAPI\SlackAPI.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.4.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NLog" Version="4.7.10" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-    <PackageReference Include="Theraot.Core" Version="3.2.5" />
   </ItemGroup>
 </Project>

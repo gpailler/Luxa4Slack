@@ -5,85 +5,76 @@
   using System.Linq;
   using System.Threading;
   using System.Threading.Tasks;
+  using CG.Luxa4Slack.Abstractions;
+  using CG.Luxa4Slack.Abstractions.Luxafor;
 
-  public class Luxa4Slack
+  internal class Luxa4Slack : ILuxa4Slack
   {
     private const int DelayBeforeUpdate = 2000;
 
-    private readonly IEnumerable<string> slackTokens;
-    private readonly bool showUnreadMentions;
-    private readonly bool showUnreadMessages;
-    private readonly bool showStatus;
-    private readonly double brightness;
+    private readonly IEnumerable<string> _slackTokens;
+    private readonly bool _showUnreadMentions;
+    private readonly bool _showUnreadMessages;
+    private readonly bool _showStatus;
+    private readonly double _brightness;
 
-    private LuxaforClient luxaforClient;
-    private List<SlackNotificationAgent> slackAgents;
-    private CancellationTokenSource cancellationTokenSource;
-    private Task updateTask;
-    private int previousWeight;
+    private readonly ILuxaforClient _luxaforClient;
+    private readonly ISlackNotificationAgentFactory _slackNotificationAgentFactory;
+    private readonly List<ISlackNotificationAgent> _slackAgents;
+    private CancellationTokenSource? _cancellationTokenSource;
+    private Task? _updateTask;
+    private int _previousWeight;
 
-    public Luxa4Slack(IEnumerable<string> slackTokens, bool showUnreadMentions, bool showUnreadMessages, bool showStatus, double brightness)
+    public Luxa4Slack(IEnumerable<string> slackTokens, bool showUnreadMentions, bool showUnreadMessages, bool showStatus, double brightness, ILuxaforClient luxaforClient, ISlackNotificationAgentFactory slackNotificationAgentFactory)
     {
-      this.slackTokens = slackTokens ?? throw new ArgumentNullException(nameof(slackTokens));
-      if (!this.slackTokens.Any())
+      _slackTokens = slackTokens ?? throw new ArgumentNullException(nameof(slackTokens));
+      if (!_slackTokens.Any())
       {
         throw new ArgumentException("Empty tokens list", nameof(slackTokens));
       }
 
-      this.showUnreadMentions = showUnreadMentions;
-      this.showUnreadMessages = showUnreadMessages;
-      this.showStatus = showStatus;
-      this.brightness = brightness;
-      this.slackAgents = new List<SlackNotificationAgent>();
+      _showUnreadMentions = showUnreadMentions;
+      _showUnreadMessages = showUnreadMessages;
+      _showStatus = showStatus;
+      _brightness = brightness;
+      _luxaforClient = luxaforClient;
+      _slackNotificationAgentFactory = slackNotificationAgentFactory;
+      _slackAgents = new List<ISlackNotificationAgent>();
     }
 
-    public event Action LuxaforFailure;
-
-    public async Task Initialize()
+    public async Task InitializeAsync()
     {
-      this.luxaforClient = await this.InitializeLuxaforClient();
-      await this.luxaforClient.StartWaveProcessingAsync();
+      await InitializeLuxaforClient();
 
-      foreach (var slackToken in this.slackTokens)
+      foreach (var slackAgent in await Task.WhenAll(_slackTokens.Select(InitializeSlackAgentAsync)))
       {
-        var slackAgent = this.InitializeSlackAgent(slackToken);
-        slackAgent.Changed += this.OnSlackChanged;
-        this.slackAgents.Add(slackAgent);
+        slackAgent.Changed += OnSlackChanged;
+        _slackAgents.Add(slackAgent);
       }
 
-      this.OnSlackChanged();
+      OnSlackChanged();
     }
 
     public void Dispose()
     {
-      this.LuxaforFailure = null;
-
-      this.slackAgents?.ForEach(x => x.Dispose());
-      this.luxaforClient?.Dispose();
+      _slackAgents.ForEach(x => x.Dispose());
     }
 
-    private async Task<LuxaforClient> InitializeLuxaforClient()
+    private async Task InitializeLuxaforClient()
     {
-      var client = new LuxaforClient(this.brightness);
-      if (client.Initialize() == false)
+      _luxaforClient.SetBrightness(_brightness);
+      if (!_luxaforClient.IsInitialized)
       {
         throw new Exception("Luxafor device initialization failed");
       }
 
-      if (await client.TestAsync())
-      {
-        return client;
-      }
-      else
-      {
-        throw new Exception("Luxafor communication issue. Please unplug/replug the Luxafor and restart the application");
-      }
+      await _luxaforClient.StartWaveProcessingAsync();
     }
 
-    private SlackNotificationAgent InitializeSlackAgent(string token)
+    private async Task<ISlackNotificationAgent> InitializeSlackAgentAsync(string token)
     {
-      var agent = new SlackNotificationAgentReconnectable(token);
-      if (agent.Initialize() == false)
+      var agent = _slackNotificationAgentFactory.Create(token);
+      if (await agent.InitializeAsync() == false)
       {
         throw new Exception("Slack connection failed. Please check token is valid");
       }
@@ -94,66 +85,60 @@
     private void OnSlackChanged()
     {
       // Cancel previous task if any
-      this.cancellationTokenSource?.Cancel();
-      this.cancellationTokenSource?.Dispose();
+      _cancellationTokenSource?.Cancel();
+      _cancellationTokenSource?.Dispose();
 
       // Wait previous task to complete
-      if (this.updateTask != null)
+      if (_updateTask != null)
       {
-        Task.WaitAny(this.updateTask);
+        Task.WaitAny(_updateTask);
       }
 
       // Prepare new token
-      this.cancellationTokenSource = new CancellationTokenSource();
-      CancellationToken token = this.cancellationTokenSource.Token;
+      _cancellationTokenSource = new CancellationTokenSource();
+      var token = _cancellationTokenSource.Token;
 
       // Determine delay before task execution
       // We want to shutdown light immediately but wait in other cases to avoid blinks
-      int currentWeight = this.GetWeight();
-      int delay = currentWeight > this.previousWeight ? DelayBeforeUpdate : 0;
-      this.previousWeight = currentWeight;
+      var currentWeight = GetWeight();
+      var delay = currentWeight > _previousWeight ? DelayBeforeUpdate : 0;
+      _previousWeight = currentWeight;
 
-      this.updateTask = Task
+      _updateTask = Task
           .Delay(delay, token)
-          .ContinueWith(this.UpdateLuxaforAsync, token);
+          .ContinueWith(UpdateLuxaforAsync, token);
     }
 
     private int GetWeight()
     {
-      int weight = 0;
-      weight += this.showUnreadMentions && this.slackAgents.Any(x => x.HasUnreadMentions) ? 2 : 0;
-      weight += this.showUnreadMessages && this.slackAgents.Any(x => x.HasUnreadMessages) ? 1 : 0;
+      var weight = 0;
+      weight += _showUnreadMentions && _slackAgents.Any(x => x.HasUnreadMentions) ? 2 : 0;
+      weight += _showUnreadMessages && _slackAgents.Any(x => x.HasUnreadMessages) ? 1 : 0;
 
       return weight;
     }
 
     private async Task UpdateLuxaforAsync(Task task)
     {
-      bool result;
-      if (this.showUnreadMentions && this.slackAgents.Any(x => x.HasUnreadMentions))
+      if (_showUnreadMentions && _slackAgents.Any(x => x.HasUnreadMentions))
       {
-        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Orange);
+        await _luxaforClient.SetAsync(LuxaforColor.Orange);
       }
-      else if (this.showUnreadMessages && this.slackAgents.Any(x => x.HasUnreadMessages))
+      else if (_showUnreadMessages && _slackAgents.Any(x => x.HasUnreadMessages))
       {
-        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Blue);
+        await _luxaforClient.SetAsync(LuxaforColor.Blue);
       }
-      else if (this.showStatus && this.slackAgents.Any(x => x.IsAway))
+      else if (_showStatus && _slackAgents.Any(x => x.IsAway))
       {
-        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Red);
+        await _luxaforClient.SetAsync(LuxaforColor.Red);
       }
-      else if (this.showStatus && this.slackAgents.Any(x => x.IsAway == false))
+      else if (_showStatus && _slackAgents.Any(x => x.IsAway == false))
       {
-        result = await this.luxaforClient.SetAsync(LuxaforClient.Colors.Green);
+        await _luxaforClient.SetAsync(LuxaforColor.Green);
       }
       else
       {
-        result = await this.luxaforClient.ResetAsync();
-      }
-
-      if (result == false)
-      {
-        this.LuxaforFailure?.Invoke();
+        await _luxaforClient.ResetAsync();
       }
     }
   }

@@ -5,8 +5,8 @@
   using System.Windows.Threading;
   using CG.Luxa4Slack.Tray.ViewModels;
   using CG.Luxa4Slack.Tray.Views;
-  using Microsoft.Toolkit.Mvvm.Messaging;
   using Microsoft.Extensions.DependencyInjection;
+  using Microsoft.Toolkit.Mvvm.Messaging;
 
   public static class ServiceCollectionExtensions
   {

@@ -1,4 +1,4 @@
-﻿namespace CG.Luxa4Slack.Abstractions
+﻿namespace CG.Luxa4Slack.Abstractions.Luxafor
 {
   using System.Threading.Tasks;
 

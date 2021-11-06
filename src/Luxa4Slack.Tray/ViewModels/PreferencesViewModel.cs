@@ -6,7 +6,7 @@
   using System.Threading;
   using System.Threading.Tasks;
   using System.Windows.Input;
-  using CG.Luxa4Slack.Abstractions;
+  using CG.Luxa4Slack.Abstractions.Luxafor;
   using CG.Luxa4Slack.Extensions;
   using CG.Luxa4Slack.Tray.Options;
   using Microsoft.Toolkit.Mvvm.ComponentModel;

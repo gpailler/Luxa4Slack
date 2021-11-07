@@ -2,46 +2,26 @@
 {
   using System.Collections.Generic;
   using System.Linq;
-  using System.Threading;
+  using System.Threading.Tasks;
+  using Dasync.Collections;
   using Microsoft.Extensions.Logging;
   using SlackAPI;
+  using SlackAPI.RPCMessages;
 
   internal class ImHandler : MessageHandlerBase
   {
     public ImHandler(SlackSocketClient client, HandlerContext context, ILogger logger)
       : base(client, context, logger)
     {
+    }
+
+    public override async Task InitializeAsync()
+    {
+      Logger.LogDebug("Fetch initial messages");
       Client.BindCallback<ImMarked>(OnImMarked);
 
-      Logger.LogDebug("Fetch initial messages");
-
-      var allChannels = new List<Channel>();
-      string? cursor = null;
-      do
-      {
-        using var waiter = new ManualResetEventSlim();
-        Client.GetConversationsList(response =>
-          {
-            foreach (var channel in response.channels)
-            {
-              if (channel.is_im && Client.UserLookup.ContainsKey(channel.user))
-              {
-                allChannels.Add(channel);
-              }
-            }
-
-            cursor = response.response_metadata.next_cursor;
-            // ReSharper disable once AccessToDisposedClosure
-            waiter.Set();
-          },
-          cursor,
-          limit: 500,
-          types: new[] { "mpim", "im" });
-
-        waiter.Wait();
-      } while (!string.IsNullOrEmpty(cursor));
-
-      RunParallel(allChannels, UpdateChannelInfo);
+      var allChannels = await GetAllChannelsAsync();
+      await allChannels.ParallelForEachAsync(UpdateChannelInfoAsync, MaxDegreeOfParallelism);
     }
 
     public override void Dispose()
@@ -51,7 +31,7 @@
       base.Dispose();
     }
 
-    private void OnImMarked(ImMarked message)
+    private async void OnImMarked(ImMarked message)
     {
       Logger.LogDebug($"Received => Type: {message.type} - SubType: {message.subtype} - Channel: {Context.GetNameFromId(message.channel)} - Raw: {GetRawMessage(message)}");
 
@@ -59,15 +39,12 @@
       {
         var directMessageConversation = new Channel() { id = message.channel };
         var channelNotification = Context.ChannelsInfo[directMessageConversation.id];
-
-        Client.GetConversationsHistory(
-          x =>
-          {
-            var messages = x.messages.Where(y => FilterMessageByDate(y, message.ts));
-            var hasUnreadMessages = messages.Any(y => y.user != Client.MySelf.id);
-            channelNotification.Update(hasUnreadMessages, hasUnreadMessages);
-          },
-          directMessageConversation, null, message.ts, HistoryItemsToFetch);
+        var messages = await RunSlackClientMethodAsync<ConversationsMessageHistory, Message[]>(
+          x => Client.GetConversationsHistory(x, directMessageConversation, null, message.ts, HistoryItemsToFetch),
+          x => x.messages);
+        messages = messages.Where(y => FilterMessageByDate(y, message.ts)).ToArray();
+        var hasUnreadMessages = messages.Any(y => y.user != Client.MySelf.id);
+        channelNotification.Update(hasUnreadMessages, hasUnreadMessages);
       }
       else
       {
@@ -75,37 +52,38 @@
       }
     }
 
-    private void UpdateChannelInfo(Channel channel)
+    private async Task<List<Channel>> GetAllChannelsAsync()
+    {
+      var allChannels = new List<Channel>();
+      string? cursor = null;
+      do
+      {
+        var response = await RunSlackClientMethodAsync<ConversationsListResponse, (Channel[] channels, string nextCursor)>(
+            x => Client.GetConversationsList(x, cursor, limit: 500, types: new[] { "mpim", "im" }),
+            x => (x.channels, x.response_metadata.next_cursor));
+
+        allChannels.AddRange(response.channels.Where(x => x.is_im && Client.UserLookup.ContainsKey(x.user)));
+        cursor = response.nextCursor;
+      } while (!string.IsNullOrEmpty(cursor));
+
+      return allChannels;
+    }
+
+    private async Task UpdateChannelInfoAsync(Channel channel)
     {
       Logger.LogDebug($"Init IM {Context.GetNameFromId(channel.id)}");
 
-      var unreadCount = 0;
-      using (var waiter = new ManualResetEventSlim())
-      {
-        Client.GetConversationsHistory(
-          x =>
-          {
-            unreadCount = x.unread_count_display;
-            // ReSharper disable once AccessToDisposedClosure
-            waiter.Set();
-          },
-          channel, null, null, 1, true);
-        waiter.Wait(SlackNotificationAgent.Timeout);
-      }
-
+      var unreadCount = await RunSlackClientMethodAsync<ConversationsMessageHistory, int>(
+        x => Client.GetConversationsHistory(x, channel, null, null, 1, true),
+          x => x.unread_count_display);
       if (unreadCount > 0)
       {
-        using var waiter = new ManualResetEventSlim();
-        Client.GetConversationsHistory(
-          x =>
-          {
-            var hasMessage = x.messages.Any(y => FilterMessageByDate(y, channel.last_read) && IsRegularMessage(y));
-            Context.ChannelsInfo[channel.id].Update(hasMessage, hasMessage);
-            // ReSharper disable once AccessToDisposedClosure
-            waiter.Set();
-          },
-          channel, null, null, unreadCount);
-        waiter.Wait(SlackNotificationAgent.Timeout);
+        var messages = await RunSlackClientMethodAsync<ConversationsMessageHistory, Message[]>(
+          x => Client.GetConversationsHistory(x, channel, null, null, unreadCount),
+          x => x.messages);
+
+        var hasMessage = messages.Any(y => FilterMessageByDate(y, channel.last_read) && IsRegularMessage(y));
+        Context.ChannelsInfo[channel.id].Update(hasMessage, hasMessage);
       }
     }
 

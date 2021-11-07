@@ -1,11 +1,13 @@
 ﻿namespace CG.Luxa4Slack.Notifications.MessageHandlers
 {
   using System;
+  using System.Threading.Tasks;
+  using CG.Luxa4Slack.Abstractions;
   using Microsoft.Extensions.Logging;
   using SlackAPI;
   using SlackAPI.WebSocketMessages;
 
-  internal class PresenceHandler : IDisposable
+  internal class PresenceHandler : IMessageHandler
   {
     private readonly SlackSocketClient _client;
     private readonly Action<bool> _onPresenceChanged;
@@ -16,9 +18,14 @@
       _client = client;
       _onPresenceChanged = onPresenceChanged;
       _logger = logger;
+    }
 
+    public Task InitializeAsync()
+    {
       _client.OnPresenceChanged += OnPresenceChanged;
       _client.SubscribePresenceChange(_client.MySelf.id);
+
+      return Task.CompletedTask;
     }
 
     public void Dispose()

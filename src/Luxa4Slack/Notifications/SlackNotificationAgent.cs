@@ -23,7 +23,7 @@
     private readonly ILoggerFactory _loggerFactory;
 
     private readonly ChannelsInfo _channelsInfo = new();
-    private readonly List<IDisposable> _messageHandlers = new();
+    private readonly List<IMessageHandler> _messageHandlers = new();
 
     private ReadableNameResolver? _readableNameResolver;
     private SlackSocketClient? _client;
@@ -60,6 +60,8 @@
         _messageHandlers.Add(new GroupHandler(_client, context, CreateLogger<GroupHandler>()));
         _messageHandlers.Add(new ImHandler(_client, context, CreateLogger<ImHandler>()));
         _messageHandlers.Add(new PresenceHandler(_client, OnPresenceChanged, CreateLogger<PresenceHandler>()));
+
+        await Task.WhenAll(_messageHandlers.Select(x => x.InitializeAsync()));
         _channelsInfo.Changed += UpdateStatus;
         UpdateStatus();
 

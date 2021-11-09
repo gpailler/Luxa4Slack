@@ -16,7 +16,7 @@ jobs:
       CONFIGURATION: Release
       PUBLISH_PLATFORM: win-x64
       PUBLISHED_PROJECT: Luxa4Slack.Tray
-      NSIS_VERSION: 3.0.6.1
+      NSIS_VERSION: 3.0.8
 
     name: Build and Pack ⚙️📦
     runs-on: windows-latest
@@ -39,7 +39,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.x
+          dotnet-version: 6.0.x
 
       - name: Publish
         run: >-

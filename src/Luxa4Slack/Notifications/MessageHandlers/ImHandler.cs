@@ -2,8 +2,8 @@
 {
   using System.Collections.Generic;
   using System.Linq;
+  using System.Threading;
   using System.Threading.Tasks;
-  using Dasync.Collections;
   using Microsoft.Extensions.Logging;
   using SlackAPI;
   using SlackAPI.RPCMessages;
@@ -21,7 +21,7 @@
       Client.BindCallback<ImMarked>(OnImMarked);
 
       var allChannels = await GetAllChannelsAsync();
-      await allChannels.ParallelForEachAsync(UpdateChannelInfoAsync, MaxDegreeOfParallelism);
+      await Parallel.ForEachAsync(allChannels, new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, UpdateChannelInfoAsync);
     }
 
     public override void Dispose()
@@ -69,7 +69,7 @@
       return allChannels;
     }
 
-    private async Task UpdateChannelInfoAsync(Channel channel)
+    private async ValueTask UpdateChannelInfoAsync(Channel channel, CancellationToken _)
     {
       Logger.LogDebug($"Init IM {Context.GetNameFromId(channel.id)}");
 

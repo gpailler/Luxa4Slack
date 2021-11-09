@@ -3,8 +3,8 @@
   using System;
   using System.Collections.Generic;
   using System.Linq;
+  using System.Threading;
   using System.Threading.Tasks;
-  using Dasync.Collections;
   using Microsoft.Extensions.Logging;
   using SlackAPI;
   using SlackAPI.WebSocketMessages;
@@ -24,7 +24,7 @@
       Logger.LogDebug("Fetch initial messages");
 
       Client.BindCallback<TMessage>(OnChannelMarked);
-      await GetChannels().ParallelForEachAsync(UpdateChannelInfoAsync, MaxDegreeOfParallelism);
+      await Parallel.ForEachAsync(GetChannels(), new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism }, UpdateChannelInfoAsync);
     }
 
     public override void Dispose()
@@ -65,7 +65,7 @@
       }
     }
 
-    private async Task UpdateChannelInfoAsync(Channel channel)
+    private async ValueTask UpdateChannelInfoAsync(Channel channel, CancellationToken _)
     {
       Logger.LogDebug($"Init {(channel.is_channel ? "channel" : "group")} {Context.GetNameFromId(channel.id)}");
 

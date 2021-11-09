@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>CG.Luxa4Slack</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Luxa4Slack.OAuth.AzureFunctions\OAuthInfo.cs" Link="OAuthInfo.cs" />
@@ -12,10 +12,9 @@
     <ProjectReference Include="..\..\vendor\SlackAPI\SlackAPI\SlackAPI.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AsyncEnumerator" Version="4.0.2" />
     <PackageReference Include="Castle.Core" Version="4.4.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Polly" Version="7.2.2" />
   </ItemGroup>

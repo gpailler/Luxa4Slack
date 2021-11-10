@@ -28,6 +28,13 @@
     private ReadableNameResolver? _readableNameResolver;
     private SlackSocketClient? _client;
 
+    static SlackNotificationAgent()
+    {
+      var helpers = new SlackClientHelpers();
+      helpers.RegisterConverter(new JsonRawConverter());
+      helpers.RegisterConverter(new StringToTextConverter());
+    }
+
     public SlackNotificationAgent(string token, Func<string, SlackSocketClient> slackSocketClientFactory, ILoggerFactory loggerFactory)
     {
       _token = token;
@@ -102,7 +109,6 @@
       using var connectionEvent = new ManualResetEvent(false);
       using var connectionSocketEvent = new ManualResetEvent(false);
       var newClient = _slackSocketClientFactory(_token);
-      newClient.RegisterConverter(new JsonRawConverter());
 
       try
       {

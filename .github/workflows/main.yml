@@ -3,7 +3,7 @@ name: Luxa4Slack CI
 on:
   push:
     branches:
-      - '**'
+      - master
     tags:
       - 'v*'
   pull_request:

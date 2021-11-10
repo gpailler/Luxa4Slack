@@ -1,0 +1,49 @@
+name: Luxa4Slack Azure functions deployment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    env:
+      AZURE_FUNCTIONAPP_NAME: luxa4slack-oauth
+      AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/Luxa4Slack.OAuth.AzureFunctions'
+      CONFIGURATION: Release
+
+    name: Build and Publish 🚀🌐
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Full history is required by GitVersion
+          submodules: true
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: '5.x'
+
+      - name: Run GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: 'Build'
+        shell: pwsh
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          dotnet build --configuration ${{ env.CONFIGURATION }} --output ./output -p:Version=${{ steps.gitversion.outputs.AssemblySemVer }}
+          popd
+
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}

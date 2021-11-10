@@ -47,8 +47,8 @@
 ; Init
 Function .onInit
   ; Check Windows version
-  ${IfNot} ${AtLeastWin8}
-    MessageBox MB_OK|MB_ICONSTOP "Windows 8 or later is required in order to run ${APPNAME}."
+  ${IfNot} ${AtLeastWin8.1}
+    MessageBox MB_OK|MB_ICONSTOP "Windows 8.1 or later is required in order to run ${APPNAME}."
     Quit
   ${EndIf}
 FunctionEnd
@@ -122,7 +122,6 @@ Section "install"
   ; Files to include in the installer
   File /r "${BINARIES}\*.exe"
   File /r "${BINARIES}\*.json"
-  File /r "${BINARIES}\*.config"
   File /r "${BINARIES}\*.dll"
   File "${LOGO}"
 
@@ -163,8 +162,15 @@ Section "uninstall"
   ; Kill running processes
   LockedList::CloseProcess /kill "$INSTDIR\${APPFILE_TRAY}"
 
+  ; Backup settings
+  Rename $INSTDIR\appsettings.json $TEMP\${APPNAME}_backup_appsettings.json
+
   ; Remove files
   RmDir /r $INSTDIR
+
+  ; Restore settings
+  CreateDirectory $INSTDIR
+  Rename $TEMP\${APPNAME}_backup_appsettings.json $INSTDIR\appsettings.json
 
   ; Remove uninstaller information from the registry
   DeleteRegKey HKCU "${UNINST_KEY}"

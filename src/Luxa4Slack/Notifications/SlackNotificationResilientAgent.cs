@@ -97,7 +97,7 @@
       Changed?.Invoke();
     }
 
-    private async Task WatchDog(object _)
+    private async Task WatchDog(object? _)
     {
       while (_watchDogToken.IsCancellationRequested == false)
       {

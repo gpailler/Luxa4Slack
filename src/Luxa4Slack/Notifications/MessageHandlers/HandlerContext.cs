@@ -101,7 +101,7 @@
       return highlightWords;
     }
 
-    private HashSet<string> GetMutedChannels(string input)
+    private static HashSet<string> GetMutedChannels(string input)
     {
       var result = input.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
         .Select(x => x.Trim());

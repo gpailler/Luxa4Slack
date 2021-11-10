@@ -55,7 +55,7 @@
         .ExecuteAsync(() => RunSlackClientMethodWithUnwrappedExceptionAsync(slackClientMethod, messageExtractor));
     }
 
-    protected string? GetRawMessage(SlackSocketMessage message)
+    protected static string? GetRawMessage(SlackSocketMessage message)
     {
       // ReSharper disable once SuspiciousTypeConversion.Global
       if (message is not IRawMessage rawMessage)
@@ -73,23 +73,23 @@
       return text != null && Context.HighlightWords.Any(x => text.IndexOf(x, StringComparison.InvariantCultureIgnoreCase) != -1);
     }
 
-    protected bool IsRegularMessage(string user, string? subtype)
-    {
-      return user != Client.MySelf.id && (subtype == null || subtype == "file_share" || subtype == "bot_message");
-    }
-
     protected bool IsRegularMessage(Message message)
     {
       return IsRegularMessage(message.user, message.subtype);
     }
 
-    protected bool FilterMessageByDate(Message message, DateTime minDate)
+    protected static bool FilterMessageByDate(Message message, DateTime minDate)
     {
       // Drop messages from threads
       return message.ts > minDate && message.thread_ts == null;
     }
 
     protected abstract bool ShouldMonitor(string id);
+
+    private bool IsRegularMessage(string user, string? subtype)
+    {
+      return user != Client.MySelf.id && (subtype == null || subtype == "file_share" || subtype == "bot_message");
+    }
 
     private void OnMessageReceived(NewMessage message)
     {
@@ -114,7 +114,7 @@
       }
     }
 
-    private async Task<TResult> RunSlackClientMethodWithUnwrappedExceptionAsync<TMessage, TResult>(Action<Action<TMessage>> slackClientMethod, Func<TMessage, TResult> messageExtractor)
+    private static async Task<TResult> RunSlackClientMethodWithUnwrappedExceptionAsync<TMessage, TResult>(Action<Action<TMessage>> slackClientMethod, Func<TMessage, TResult> messageExtractor)
       where TMessage : Response
     {
       TResult? result = default;

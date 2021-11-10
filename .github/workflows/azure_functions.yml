@@ -1,4 +1,4 @@
-name: Luxa4Slack Azure functions deployment
+﻿name: Luxa4Slack Azure functions deployment
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
         shell: pwsh
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-          dotnet build --configuration ${{ env.CONFIGURATION }} --output ./output -p:Version=${{ steps.gitversion.outputs.AssemblySemVer }}
+          dotnet build --configuration ${{ env.CONFIGURATION }} --output ./output -p:Version=${{ steps.gitversion.outputs.AssemblySemVer }} -p:FileVersion=${{ steps.gitversion.outputs.AssemblySemFileVer }} -p:InformationalVersion=${{ steps.gitversion.outputs.InformationalVersion }}
           popd
 
       - name: 'Run Azure Functions Action'

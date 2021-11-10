@@ -3,24 +3,25 @@
   using System;
   using System.Collections.Generic;
   using System.Net.Http;
-  using CG.Luxa4Slack;
-
   using System.Threading.Tasks;
+  using CG.Luxa4Slack;
+  using Microsoft.AspNetCore.Http;
   using Microsoft.AspNetCore.Mvc;
   using Microsoft.Azure.WebJobs;
   using Microsoft.Azure.WebJobs.Extensions.Http;
-  using Microsoft.AspNetCore.Http;
   using Microsoft.Extensions.Logging;
   using Newtonsoft.Json;
 
   public class RedirectFunction
   {
-    private static readonly HttpClient HttpClient = new HttpClient();
+    private readonly HttpClient _httpClient;
 
-    public RedirectFunction()
+    public RedirectFunction(IHttpClientFactory httpClientFactory)
     {
+      _httpClient = httpClientFactory.CreateClient();
+
       // Ensure SecretId is defined
-      GC.KeepAlive(OAuthInfo.SecretId); 
+      GC.KeepAlive(OAuthInfo.SecretId);
     }
 
     [FunctionName("Redirect")]
@@ -37,17 +38,17 @@
         return new BadRequestObjectResult("'code' not found in the query string");
       }
 
-      var getTokenUri = this.BuildGetTokenUri(OAuthInfo.ClientId, OAuthInfo.SecretId, OAuthInfo.RedirectedUri, code);
-      var response = await HttpClient.GetAsync(getTokenUri);
+      var getTokenUri = BuildGetTokenUri(OAuthInfo.ClientId, OAuthInfo.SecretId, OAuthInfo.RedirectedUri, code);
+      var response = await _httpClient.GetAsync(getTokenUri);
       if (response.IsSuccessStatusCode)
       {
-        string result = await response.Content.ReadAsStringAsync();
-        var resultObjectTemplate = new {ok = false, access_token = string.Empty, error = string.Empty};
+        var result = await response.Content.ReadAsStringAsync();
+        var resultObjectTemplate = new { ok = false, access_token = string.Empty, error = string.Empty };
         var resultObject = JsonConvert.DeserializeAnonymousType(result, resultObjectTemplate);
 
         if (resultObject.ok)
         {
-          return new OkObjectResult($"You Slack token is: {resultObject.access_token}");
+          return new OkObjectResult($"Your Slack token is: {resultObject.access_token}");
         }
         else
         {
@@ -62,7 +63,7 @@
       }
     }
 
-    private Uri BuildGetTokenUri(string clientId, string clientSecret, string redirectUri, string code)
+    private static Uri BuildGetTokenUri(string clientId, string clientSecret, string redirectUri, string code)
     {
       var query = new FormUrlEncodedContent(new[]
       {

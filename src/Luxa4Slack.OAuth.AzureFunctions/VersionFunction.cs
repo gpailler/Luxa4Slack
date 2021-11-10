@@ -1,9 +1,9 @@
 ﻿namespace Luxa4Slack.OAuth.AzureFunctions
 {
+  using Microsoft.AspNetCore.Http;
   using Microsoft.AspNetCore.Mvc;
   using Microsoft.Azure.WebJobs;
   using Microsoft.Azure.WebJobs.Extensions.Http;
-  using Microsoft.AspNetCore.Http;
   using Microsoft.Extensions.Logging;
 
   public class VersionFunction
@@ -16,7 +16,7 @@
     {
       log.LogInformation("'Version' HTTP trigger function processed a request.");
 
-      var assembly = this.GetType().Assembly.GetName();
+      var assembly = GetType().Assembly.GetName();
       return new OkObjectResult($"{assembly.Name} - {assembly.Version}");
     }
   }
